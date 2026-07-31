@@ -1,0 +1,73 @@
+{
+  "folders": [
+    { "name": "🗂  SkillBridge Root",   "path": "." },
+    { "name": "⚛️  Frontend",           "path": "./frontend" },
+    { "name": "🟢 Backend",             "path": "./backend" },
+    { "name": "🐍 Matching Engine",     "path": "./matching-engine" }
+  ],
+
+  "settings": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "files.eol": "\n",
+    "files.trimTrailingWhitespace": true,
+    "terminal.integrated.defaultProfile.windows": "Git Bash",
+    "explorer.compactFolders": false,
+    "workbench.iconTheme": "material-icon-theme",
+    "workbench.startupEditor": "none",
+    "editor.bracketPairColorization.enabled": true,
+    "editor.guides.bracketPairs": true,
+
+    "eslint.workingDirectories": [
+      { "directory": "./frontend", "changeProcessCWD": true },
+      { "directory": "./backend",  "changeProcessCWD": true }
+    ],
+
+    "python.defaultInterpreterPath": "${workspaceFolder}/matching-engine/.venv/Scripts/python.exe",
+
+    "tailwindCSS.includeLanguages": { "javascript": "javascript", "javascriptreact": "javascript" },
+
+    "[python]": {
+      "editor.defaultFormatter": "ms-python.black-formatter",
+      "editor.tabSize": 4
+    },
+
+    "files.exclude": {
+      "**/node_modules": true,
+      "**/.next": true,
+      "**/__pycache__": true,
+      "**/.venv": true
+    },
+
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/.next": true,
+      "**/__pycache__": true,
+      "**/.venv": true,
+      "**/package-lock.json": true
+    }
+  },
+
+  "extensions": {
+    "recommendations": [
+      "dbaeumer.vscode-eslint",
+      "esbenp.prettier-vscode",
+      "usernamehw.errorlens",
+      "bradlc.vscode-tailwindcss",
+      "dsznajder.es7-react-js-snippets",
+      "formulahendry.auto-rename-tag",
+      "ms-python.python",
+      "ms-python.black-formatter",
+      "ms-python.pylint",
+      "humao.rest-client",
+      "cweijan.vscode-database-client2",
+      "ms-azuretools.vscode-docker",
+      "eamodio.gitlens",
+      "mhutchie.git-graph",
+      "pkief.material-icon-theme",
+      "christian-kohler.path-intellisense",
+      "wayou.vscode-todo-highlight",
+      "mikestead.dotenv"
+    ]
+  }
+}
