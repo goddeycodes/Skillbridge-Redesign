@@ -27,6 +27,14 @@ npm install
 npm run dev             # starts on http://localhost:5000
 ```
 
+> If you are using Supabase for Postgres/auth, set the Supabase environment variables in `backend/.env`:
+> - `SUPABASE_URL`
+> - `SUPABASE_PUBLISHABLE_KEY`
+> - `SUPABASE_SECRET_KEY`
+> - `SUPABASE_JWKS_URL`
+>
+> Keep `MONGO_URI` pointed at a running MongoDB instance because the backend still stores forums, skills, and messages there.
+
 ### 2. Matching Engine
 ```bash
 cd matching-engine

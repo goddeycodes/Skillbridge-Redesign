@@ -1,5 +1,4 @@
-const { verifyToken } = require('../config/jwt');
-const User = require('../models/User');
+const { verifyUserToken } = require('../config/supabase');
 
 const protect = async (req, res, next) => {
   try {
@@ -8,16 +7,12 @@ const protect = async (req, res, next) => {
       return res.status(401).json({ success: false, message: 'Not authorised. No token.' });
 
     const token = authHeader.split(' ')[1];
-    const decoded = verifyToken(token);
-    const user = await User.findByPk(decoded.id, { attributes: { exclude: ['password'] } });
-
-    if (!user || !user.isActive)
-      return res.status(401).json({ success: false, message: 'User not found or deactivated.' });
-
+    const user = await verifyUserToken(token);
     req.user = user;
     next();
   } catch (err) {
-    return res.status(401).json({ success: false, message: 'Invalid or expired token.' });
+    const status = err.status && err.status >= 400 && err.status < 600 ? err.status : 401;
+    return res.status(status).json({ success: false, message: err.message || 'Invalid or expired token.' });
   }
 };
 

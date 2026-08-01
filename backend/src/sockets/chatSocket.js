@@ -5,20 +5,20 @@
  * Auth: client connects with `auth: { token }`; we verify the JWT before
  * allowing any events, so sockets can't impersonate other users.
  */
-const { verifyToken } = require('../config/jwt');
+const { verifyUserToken } = require('../config/supabase');
 const Message = require('../models/Message');
 
 module.exports = (io) => {
   // ── Auth middleware for every connecting socket ──────────────────────────
-  io.use((socket, next) => {
+  io.use(async (socket, next) => {
     try {
       const token = socket.handshake.auth?.token;
       if (!token) return next(new Error('Authentication required.'));
-      const decoded = verifyToken(token);
-      socket.userId = decoded.id;
+      const user = await verifyUserToken(token);
+      socket.userId = user.id;
       next();
-    } catch {
-      next(new Error('Invalid or expired token.'));
+    } catch (err) {
+      next(new Error(err.message || 'Invalid or expired token.'));
     }
   });
 
