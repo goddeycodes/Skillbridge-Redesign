@@ -5,10 +5,11 @@ import { usePathname, useRouter } from 'next/navigation';
 import {
   BookOpen, GraduationCap, Home, UsersRound, MessageCircle,
   CalendarDays, UserRound, Bell, LogOut, ChevronDown, Menu, X,
-  Compass, Sparkles, Target, Trophy
+  Compass, Target, Trophy
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import Logo from './Logo';
 
 const groups = [
   { label: 'LEARN', items: [
@@ -51,17 +52,14 @@ export default function AppShell({ children }) {
   const signOut = () => { logout(); router.push('/auth/login'); };
 
   return (
-    <div className="min-h-screen bg-[#f7f9fc] text-slate-800">
+    <div className="min-h-screen bg-[#FBF9F5] text-slate-800">
       <aside className="fixed inset-y-0 left-0 z-50 hidden w-64 border-r border-slate-200/80 bg-white lg:flex lg:flex-col">
         <div className="flex h-20 items-center px-6">
-          <Link href="/dashboard" className="flex items-center gap-3">
-            <span className="brand-mark"><Sparkles size={18} /></span>
-            <span className="text-lg font-extrabold tracking-tight text-slate-900">SkillBridge</span>
-          </Link>
+          <Logo href="/dashboard" size={24} />
         </div>
         <div className="px-4 pb-5">
-          <div className="rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 p-4">
-            <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-blue-700"><Target size={14} /> Your learning journey</div>
+          <div className="rounded-2xl bg-gradient-to-br from-brand-50 to-brand-100 p-4">
+            <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-brand-700"><Target size={14} /> Your learning journey</div>
             <p className="text-sm font-semibold text-slate-800">Learn. Teach. Grow together.</p>
             <p className="mt-1 text-xs leading-5 text-slate-500">Build skills through real people and real conversations.</p>
           </div>
@@ -100,8 +98,8 @@ export default function AppShell({ children }) {
             <button onClick={() => setMobileOpen(true)} className="rounded-xl p-2 text-slate-600 hover:bg-slate-100 lg:hidden"><Menu size={21}/></button>
             <div className="hidden sm:block"><p className="text-sm font-medium text-slate-500">{pathname === '/dashboard' ? 'Your learning home' : 'Keep building your skills'}</p></div>
             <div className="ml-auto flex items-center gap-2">
-              <div className="hidden items-center gap-2 rounded-full border border-amber-100 bg-amber-50 px-3 py-1.5 sm:flex"><span className="text-xs font-bold text-amber-700">{user?.credits ?? 0} credits</span></div>
-              <button className="relative rounded-xl p-2.5 text-slate-500 hover:bg-slate-100"><Bell size={18}/><span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-blue-600"/></button>
+              <div className="hidden items-center gap-2 rounded-full border border-gold-100 bg-gold-50 px-3 py-1.5 sm:flex"><span className="text-xs font-bold text-gold-700">{user?.credits ?? 0} credits</span></div>
+              <button className="relative rounded-xl p-2.5 text-slate-500 hover:bg-slate-100"><Bell size={18}/><span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-accent-500"/></button>
               <div className="relative" ref={profileRef}>
                 <button onClick={() => setProfileOpen(v => !v)} className="flex items-center gap-2 rounded-xl p-1.5 hover:bg-slate-100"><Avatar user={user}/><ChevronDown size={14} className="hidden text-slate-400 sm:block"/></button>
                 {profileOpen && <div className="absolute right-0 mt-2 w-56 overflow-hidden rounded-2xl border border-slate-200 bg-white py-1 shadow-xl">
@@ -129,7 +127,7 @@ export default function AppShell({ children }) {
         <button className="absolute inset-0 bg-slate-950/30" onClick={() => setMobileOpen(false)} aria-label="Close menu"/>
         <aside className="relative flex h-full w-[82%] max-w-sm flex-col bg-white shadow-2xl">
           <div className="flex h-20 items-center justify-between border-b border-slate-100 px-5">
-            <Link href="/dashboard" className="flex items-center gap-3"><span className="brand-mark"><Sparkles size={18}/></span><span className="text-lg font-extrabold">SkillBridge</span></Link>
+            <Logo href="/dashboard" size={24} />
             <button onClick={() => setMobileOpen(false)} className="rounded-xl p-2 hover:bg-slate-100"><X size={19}/></button>
           </div>
           <nav className="flex-1 overflow-y-auto px-4 py-5">
@@ -143,5 +141,5 @@ export default function AppShell({ children }) {
 
 function Avatar({ user }) {
   const initials = (user?.name || 'SB').split(' ').map(x => x[0]).slice(0,2).join('').toUpperCase();
-  return <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full bg-blue-100 ring-2 ring-white">{user?.avatar ? <img src={user.avatar} alt="" className="h-full w-full object-cover"/> : <div className="flex h-full w-full items-center justify-center text-xs font-bold text-blue-700">{initials}</div>}</div>;
+  return <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full bg-brand-100 ring-2 ring-white">{user?.avatar ? <img src={user.avatar} alt="" className="h-full w-full object-cover"/> : <div className="flex h-full w-full items-center justify-center text-xs font-bold text-brand-700">{initials}</div>}</div>;
 }

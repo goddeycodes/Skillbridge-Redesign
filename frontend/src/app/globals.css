@@ -5,31 +5,71 @@
 @layer base {
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
-  body { @apply font-sans text-slate-800 bg-[#f7f9fc] antialiased; }
+  body { @apply font-sans text-slate-800 bg-[#FBF9F5] antialiased; }
+  h1, h2, h3, .font-display {
+    font-family: "Space Grotesk", system-ui, sans-serif;
+  }
 }
 
 @layer components {
+  /* ===== Surfaces ===== */
   .sb-card { @apply rounded-2xl border border-slate-100 bg-white shadow-sm; }
-  .sb-input { @apply w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100; }
+
+  /* ===== Forms ===== */
+  .sb-input {
+    @apply w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800
+           placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100;
+  }
   .sb-label { @apply mb-1.5 block text-sm font-medium text-slate-700; }
   .sb-error { @apply mt-1.5 text-xs text-red-500; }
-  .sb-btn-primary { @apply inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50; }
-  .sb-btn-ghost { @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100; }
-  .sb-btn-outline { @apply inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50; }
-  .brand-mark { @apply flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm; }
+
+  /* ===== Buttons =====
+     Primary is the accent (coral) — reserved for the one main action on a
+     screen. Everything else (outline/ghost) stays quiet in brand/slate so
+     the important choice is never ambiguous. */
+  .sb-btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-accent-500 px-4 py-2.5
+           text-sm font-bold text-white transition hover:bg-accent-600
+           disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .sb-btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-brand-800 px-4 py-2.5
+           text-sm font-bold text-white transition hover:bg-brand-900
+           disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .sb-btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold
+           text-slate-600 transition hover:bg-slate-100;
+  }
+  .sb-btn-outline {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white
+           px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50;
+  }
+
+  /* ===== Brand ===== */
+  .brand-mark { @apply flex h-9 w-9 items-center justify-center rounded-xl bg-brand-600 text-white shadow-sm; }
+
+  /* ===== Navigation ===== */
   .sidebar-link { @apply flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-500 transition hover:bg-slate-50 hover:text-slate-900; }
-  .sidebar-link-active { @apply bg-blue-50 font-bold text-blue-700; }
+  .sidebar-link-active { @apply bg-brand-50 font-bold text-brand-700; }
   .mobile-tab { @apply flex min-w-0 flex-1 flex-col items-center gap-1 px-1 py-2 text-[10px] font-semibold text-slate-400; }
-  .mobile-tab-active { @apply text-blue-600; }
-  .eyebrow { @apply inline-flex items-center gap-1.5 text-[10px] font-extrabold tracking-[0.15em] text-blue-600; }
-  .badge-blue { @apply inline-flex rounded-full bg-blue-100 px-2.5 py-1 text-[10px] font-bold text-blue-700; }
-  .learning-goal-card { @apply rounded-2xl border border-blue-100 bg-white p-6 shadow-sm sm:p-7; }
+  .mobile-tab-active { @apply text-brand-600; }
+
+  /* ===== Labels / status ===== */
+  .eyebrow { @apply inline-flex items-center gap-1.5 text-[10px] font-extrabold tracking-[0.15em] text-brand-600; }
+  .badge-blue { @apply inline-flex rounded-full bg-brand-100 px-2.5 py-1 text-[10px] font-bold text-brand-700; }
+  .badge-gold { @apply inline-flex rounded-full bg-gold-100 px-2.5 py-1 text-[10px] font-bold text-gold-700; }
+  .badge-learn { @apply inline-flex rounded-full bg-learn-100 px-2.5 py-1 text-[10px] font-bold text-learn-700; }
+  .badge-success { @apply inline-flex rounded-full bg-success-100 px-2.5 py-1 text-[10px] font-bold text-success-700; }
+
+  /* ===== Dashboard / cards ===== */
+  .learning-goal-card { @apply rounded-2xl border border-brand-100 bg-white p-6 shadow-sm sm:p-7; }
   .course-card { @apply overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md; }
   .course-cover { @apply flex h-32 items-end justify-between p-4 text-white; }
-  .cover-0 { @apply bg-gradient-to-br from-blue-600 to-indigo-700; }
-  .cover-1 { @apply bg-gradient-to-br from-violet-600 to-fuchsia-700; }
-  .cover-2 { @apply bg-gradient-to-br from-emerald-600 to-teal-700; }
-  .skill-category { @apply flex min-h-32 flex-col items-start rounded-2xl border border-slate-100 bg-white p-4 transition hover:-translate-y-0.5 hover:border-blue-100 hover:shadow-sm; }
+  .cover-0 { @apply bg-gradient-to-br from-brand-600 to-brand-800; }
+  .cover-1 { @apply bg-gradient-to-br from-learn-500 to-learn-700; }
+  .cover-2 { @apply bg-gradient-to-br from-success-500 to-brand-700; }
+  .skill-category { @apply flex min-h-32 flex-col items-start rounded-2xl border border-slate-100 bg-white p-4 transition hover:-translate-y-0.5 hover:border-brand-100 hover:shadow-sm; }
 }
 
 @layer utilities {

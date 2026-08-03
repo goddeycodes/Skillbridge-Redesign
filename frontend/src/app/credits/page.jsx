@@ -7,9 +7,9 @@ import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
 const TYPE_CONFIG = {
-  earned:  { label: 'Earned',   color: 'text-emerald-600', bg: 'bg-emerald-50', icon: TrendingUp,  sign: '+' },
+  earned:  { label: 'Earned',   color: 'text-success-600', bg: 'bg-success-50', icon: TrendingUp,  sign: '+' },
   spent:   { label: 'Spent',    color: 'text-red-500',     bg: 'bg-red-50',     icon: TrendingDown, sign: '-' },
-  bonus:   { label: 'Bonus',    color: 'text-amber-600',   bg: 'bg-amber-50',   icon: Zap,          sign: '+' },
+  bonus:   { label: 'Bonus',    color: 'text-gold-600',    bg: 'bg-gold-50',    icon: Zap,          sign: '+' },
   refund:  { label: 'Refund',   color: 'text-brand-600',   bg: 'bg-brand-50',   icon: RefreshCw,    sign: '+' },
 };
 
@@ -47,10 +47,9 @@ export default function CreditsPage() {
   return (
     <div className="space-y-6">
 
-      {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-          <Zap size={22} className="text-amber-500" /> Credit Ledger
+          <Zap size={22} className="text-gold-500" /> Credit Ledger
         </h1>
         <p className="text-slate-500 mt-1 text-sm">
           A transparent record of every credit you've earned and spent.
@@ -63,17 +62,16 @@ export default function CreditsPage() {
         </div>
       ) : (
         <>
-          {/* Summary cards */}
           <div className="grid grid-cols-3 gap-4">
             <SummaryCard
               icon={Zap}        label="Current balance"
               value={ledger?.balance ?? 0}
-              color="text-amber-600" bg="bg-amber-50"
+              color="text-gold-600" bg="bg-gold-50"
             />
             <SummaryCard
               icon={TrendingUp} label="Total earned"
               value={`+${ledger?.summary?.earned ?? 0}`}
-              color="text-emerald-600" bg="bg-emerald-50"
+              color="text-success-600" bg="bg-success-50"
             />
             <SummaryCard
               icon={TrendingDown} label="Total spent"
@@ -82,7 +80,6 @@ export default function CreditsPage() {
             />
           </div>
 
-          {/* Filter tabs */}
           <div className="flex gap-1 border-b border-slate-200">
             {['all', 'earned', 'spent', 'refund', 'bonus'].map(f => (
               <button
@@ -99,7 +96,6 @@ export default function CreditsPage() {
             ))}
           </div>
 
-          {/* Transactions list */}
           {filtered.length === 0 ? (
             <div className="sb-card p-10 text-center text-slate-400">
               <Zap size={28} className="mb-2 mx-auto text-slate-200" />
@@ -116,12 +112,10 @@ export default function CreditsPage() {
 
                   return (
                     <li key={t.id || i} className="flex items-center gap-4 px-5 py-4 hover:bg-slate-50 transition-colors">
-                      {/* Icon */}
                       <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${cfg.bg}`}>
                         <Icon size={15} className={cfg.color} />
                       </div>
 
-                      {/* Reason + date */}
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-slate-700 truncate">
                           {t.reason || cfg.label}
@@ -131,9 +125,8 @@ export default function CreditsPage() {
                         </p>
                       </div>
 
-                      {/* Amount + running balance */}
                       <div className="text-right shrink-0">
-                        <p className={`text-sm font-bold ${isPos ? 'text-emerald-600' : 'text-red-500'}`}>
+                        <p className={`text-sm font-bold ${isPos ? 'text-success-600' : 'text-red-500'}`}>
                           {isPos ? '+' : ''}{t.amount}
                         </p>
                         <p className="text-xs text-slate-400 mt-0.5">

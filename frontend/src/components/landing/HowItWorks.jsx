@@ -4,7 +4,6 @@ const STEPS = [
   {
     number: '01',
     icon: UserPlus,
-    color: 'bg-brand-600',
     lightColor: 'bg-brand-50',
     textColor: 'text-brand-600',
     title: 'Create your profile',
@@ -14,9 +13,8 @@ const STEPS = [
   {
     number: '02',
     icon: Sparkles,
-    color: 'bg-violet-600',
-    lightColor: 'bg-violet-50',
-    textColor: 'text-violet-600',
+    lightColor: 'bg-learn-50',
+    textColor: 'text-learn-600',
     title: 'Get AI-matched',
     description:
       'Our matching engine analyses skill compatibility, proficiency levels, and language preferences to rank your best exchange partners — no endless browsing required.',
@@ -24,9 +22,8 @@ const STEPS = [
   {
     number: '03',
     icon: Calendar,
-    color: 'bg-emerald-600',
-    lightColor: 'bg-emerald-50',
-    textColor: 'text-emerald-600',
+    lightColor: 'bg-success-50',
+    textColor: 'text-success-600',
     title: 'Book a session',
     description:
       'Schedule a live 1-on-1 session with your match. Chat beforehand to align on goals. Join via any video tool — Zoom, Google Meet, whatever works for both of you.',
@@ -34,9 +31,8 @@ const STEPS = [
   {
     number: '04',
     icon: Star,
-    color: 'bg-amber-500',
-    lightColor: 'bg-amber-50',
-    textColor: 'text-amber-600',
+    lightColor: 'bg-gold-50',
+    textColor: 'text-gold-600',
     title: 'Earn & grow',
     description:
       'Complete a session as a teacher and earn a credit. Spend credits to learn from others. Rate each session to build your reputation and unlock verified skill badges.',
@@ -53,7 +49,7 @@ export default function HowItWorks() {
           <span className="inline-block text-xs font-semibold text-brand-600 uppercase tracking-widest mb-3">
             How it works
           </span>
-          <h2 className="text-3xl sm:text-4xl font-bold text-slate-800 leading-tight">
+          <h2 className="font-display text-3xl sm:text-4xl font-bold text-slate-800 leading-tight">
             Learn by teaching.<br />Teach by learning.
           </h2>
           <p className="mt-4 text-slate-500 text-lg max-w-xl mx-auto leading-relaxed">
@@ -74,7 +70,7 @@ export default function HowItWorks() {
                 )}
 
                 {/* Number */}
-                <p className="text-5xl font-black text-slate-100 group-hover:text-brand-50 transition-colors leading-none mb-4 select-none">
+                <p className="font-display text-5xl font-black text-slate-100 group-hover:text-brand-50 transition-colors leading-none mb-4 select-none">
                   {step.number}
                 </p>
 
@@ -94,17 +90,17 @@ export default function HowItWorks() {
         <div className="mt-12 bg-white rounded-2xl border border-slate-100 shadow-sm p-6 sm:p-8">
           <div className="grid sm:grid-cols-3 gap-6 text-center">
             <div>
-              <p className="text-3xl font-black text-brand-600">10</p>
+              <p className="font-display text-3xl font-black text-brand-600">10</p>
               <p className="text-sm font-semibold text-slate-700 mt-1">Free credits on signup</p>
               <p className="text-xs text-slate-400 mt-0.5">Start learning immediately</p>
             </div>
             <div className="sm:border-x border-slate-100">
-              <p className="text-3xl font-black text-emerald-600">+1</p>
+              <p className="font-display text-3xl font-black text-success-600">+1</p>
               <p className="text-sm font-semibold text-slate-700 mt-1">Credit per session taught</p>
               <p className="text-xs text-slate-400 mt-0.5">Teaching earns you learning</p>
             </div>
             <div>
-              <p className="text-3xl font-black text-violet-600">-1</p>
+              <p className="font-display text-3xl font-black text-learn-600">-1</p>
               <p className="text-sm font-semibold text-slate-700 mt-1">Credit per session booked</p>
               <p className="text-xs text-slate-400 mt-0.5">No money, ever</p>
             </div>

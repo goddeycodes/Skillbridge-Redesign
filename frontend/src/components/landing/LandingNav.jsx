@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Menu, X } from 'lucide-react';
+import Logo from '../shared/Logo';
 
 export default function LandingNav() {
   const [scrolled,   setScrolled]   = useState(false);
@@ -25,19 +26,7 @@ export default function LandingNav() {
     }`}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
 
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center shadow-sm">
-            <svg width="18" height="18" viewBox="0 0 22 22" fill="none">
-              <path d="M4 11C4 7.13 7.13 4 11 4s7 3.13 7 7-3.13 7-7 7-7-3.13-7-7Z"
-                stroke="white" strokeWidth="1.5"/>
-              <path d="M8 11h6M11 8v6" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
-            </svg>
-          </div>
-          <span className={`font-bold text-lg tracking-tight transition-colors ${
-            scrolled ? 'text-slate-800' : 'text-white'
-          }`}>SkillBridge</span>
-        </Link>
+        <Logo variant={scrolled ? 'color' : 'white'} size={26} />
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-1">
@@ -64,7 +53,7 @@ export default function LandingNav() {
             Sign in
           </Link>
           <Link href="/auth/register"
-            className="text-sm font-semibold px-4 py-2 rounded-lg bg-brand-600 text-white hover:bg-brand-700 transition-colors shadow-sm">
+            className="text-sm font-semibold px-4 py-2 rounded-lg bg-accent-500 text-white hover:bg-accent-600 transition-colors shadow-sm">
             Get started free
           </Link>
         </div>
@@ -93,7 +82,7 @@ export default function LandingNav() {
               Sign in
             </Link>
             <Link href="/auth/register" onClick={() => setMenuOpen(false)}
-              className="block text-center px-4 py-2.5 text-sm font-semibold text-white bg-brand-600 rounded-lg hover:bg-brand-700 transition-colors">
+              className="block text-center px-4 py-2.5 text-sm font-semibold text-white bg-accent-500 rounded-lg hover:bg-accent-600 transition-colors">
               Get started free
             </Link>
           </div>

@@ -6,7 +6,7 @@ function StarRow({ score }) {
     <div className="flex gap-0.5">
       {[1,2,3,4,5].map(i => (
         <Star key={i} size={13}
-          className={i <= score ? 'text-amber-400 fill-amber-400' : 'text-slate-200 fill-slate-200'} />
+          className={i <= score ? 'text-gold-400 fill-gold-400' : 'text-slate-200 fill-slate-200'} />
       ))}
     </div>
   );

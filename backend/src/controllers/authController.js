@@ -14,9 +14,15 @@ const sanitizeUser = (user) => ({
 });
 
 // POST /api/auth/register
+const { isPostgresAvailable } = require('../config/database');
+
 exports.register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
+
+    if (!isPostgresAvailable()) {
+      return res.status(503).json({ success: false, message: 'Database is unavailable. Try again later.' });
+    }
 
     if (await User.findOne({ where: { email } }))
       return res.status(409).json({ success: false, message: 'An account with that email already exists.' });

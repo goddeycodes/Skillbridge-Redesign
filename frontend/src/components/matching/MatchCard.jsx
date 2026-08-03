@@ -30,7 +30,7 @@ export default function MatchCard({ match }) {
               </div>
               <div className="flex items-center gap-3 mt-0.5 text-xs text-slate-400">
                 <span className="flex items-center gap-1">
-                  <Star size={11} className="text-amber-400 fill-amber-400" />
+                  <Star size={11} className="text-gold-400 fill-gold-400" />
                   {user?.reputation?.toFixed(1) ?? '0.0'}
                 </span>
                 {user?.timezone && (
@@ -56,8 +56,8 @@ export default function MatchCard({ match }) {
           </div>
 
           <div className="flex items-center gap-2.5 text-sm">
-            <div className="w-6 h-6 rounded-full bg-violet-100 flex items-center justify-center shrink-0">
-              <span className="text-[10px] font-bold text-violet-600">{user?.name?.[0] || '?'}</span>
+            <div className="w-6 h-6 rounded-full bg-learn-100 flex items-center justify-center shrink-0">
+              <span className="text-[10px] font-bold text-learn-600">{user?.name?.[0] || '?'}</span>
             </div>
             <span className="text-slate-600">teaches <span className="font-semibold text-slate-800">{theyTeach}</span></span>
           </div>

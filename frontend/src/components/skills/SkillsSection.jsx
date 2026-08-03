@@ -27,7 +27,7 @@ export default function SkillsSection({ teachSkills, learnSkills, isOwner, onRef
     try {
       await skillsAPI.remove(id);
       toast.success('Skill removed.');
-      onRefresh(); // still needed for deletes since we need to sync with DB
+      onRefresh();
     } catch {
       toast.error('Failed to remove skill.');
     }
@@ -35,7 +35,7 @@ export default function SkillsSection({ teachSkills, learnSkills, isOwner, onRef
 
   const tabs = [
     { key: 'teach', label: 'Skills I Teach', icon: GraduationCap, count: teachSkills.length, color: 'text-brand-600' },
-    { key: 'learn', label: 'Skills I Want',  icon: BookOpen,      count: learnSkills.length, color: 'text-violet-600' },
+    { key: 'learn', label: 'Skills I Want',  icon: BookOpen,      count: learnSkills.length, color: 'text-learn-600' },
   ];
 
   const shown = activeTab === 'teach' ? teachSkills : learnSkills;

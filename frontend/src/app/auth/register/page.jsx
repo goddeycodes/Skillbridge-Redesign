@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Loader2, Eye, EyeOff, AlertCircle, Zap } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
+import Logo from '../../../components/shared/Logo';
 
 const schema = z.object({
   name:     z.string().min(2, 'Name must be at least 2 characters'),
@@ -25,7 +26,7 @@ function PasswordStrength({ password = '' }) {
     { label: 'Number',           pass: /[0-9]/.test(password)   },
   ];
   const score = checks.filter(c => c.pass).length;
-  const bar   = ['bg-red-400', 'bg-amber-400', 'bg-emerald-500'];
+  const bar   = ['bg-red-400', 'bg-gold-400', 'bg-success-500'];
 
   if (!password) return null;
 
@@ -38,7 +39,7 @@ function PasswordStrength({ password = '' }) {
       </div>
       <div className="flex gap-3">
         {checks.map(c => (
-          <span key={c.label} className={`text-xs flex items-center gap-1 ${c.pass ? 'text-emerald-600' : 'text-slate-400'}`}>
+          <span key={c.label} className={`text-xs flex items-center gap-1 ${c.pass ? 'text-success-600' : 'text-slate-400'}`}>
             <span>{c.pass ? '✓' : '○'}</span> {c.label}
           </span>
         ))}
@@ -88,17 +89,11 @@ export default function RegisterPage() {
 
         {/* Logo */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2.5 justify-center">
-            <div className="w-10 h-10 rounded-xl bg-brand-600 flex items-center justify-center shadow-sm">
-              <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-                <path d="M4 11C4 7.13 7.13 4 11 4s7 3.13 7 7-3.13 7-7 7-7-3.13-7-7Z" stroke="white" strokeWidth="1.5"/>
-                <path d="M8 11h6M11 8v6" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
-              </svg>
-            </div>
-            <span className="font-bold text-xl text-slate-800">SkillBridge</span>
-          </Link>
-          <h1 className="mt-6 text-2xl font-bold text-slate-800">Create your account</h1>
-          <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-100 text-amber-700 text-xs font-medium">
+          <div className="inline-flex justify-center">
+            <Logo />
+          </div>
+          <h1 className="font-display mt-6 text-2xl font-bold text-slate-800">Create your account</h1>
+          <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold-50 border border-gold-100 text-gold-700 text-xs font-medium">
             <Zap size={11} /> You'll get 10 free credits to start
           </div>
         </div>

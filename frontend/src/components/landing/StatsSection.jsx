@@ -23,7 +23,7 @@ const TESTIMONIALS = [
     name: 'Ama Mensah',
     role: 'Language Tutor',
     initials: 'AM',
-    color: 'from-violet-400 to-violet-600',
+    color: 'from-learn-400 to-learn-600',
     rating: 5,
   },
   {
@@ -32,7 +32,7 @@ const TESTIMONIALS = [
     name: 'Elinam Badu',
     role: 'UX Designer',
     initials: 'EB',
-    color: 'from-emerald-400 to-emerald-600',
+    color: 'from-success-400 to-success-600',
     rating: 5,
   },
 ];
@@ -46,7 +46,7 @@ export default function StatsSection() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
             {STATS.map(({ value, label, sub }, i) => (
               <div key={i} className="text-center">
-                <p className="text-4xl sm:text-5xl font-black text-brand-600">{value}</p>
+                <p className="font-display text-4xl sm:text-5xl font-black text-brand-600">{value}</p>
                 <p className="mt-1 text-sm font-semibold text-slate-700">{label}</p>
                 <p className="text-xs text-slate-400 mt-0.5">{sub}</p>
               </div>
@@ -62,7 +62,7 @@ export default function StatsSection() {
             <span className="inline-block text-xs font-semibold text-brand-600 uppercase tracking-widest mb-3">
               Community voices
             </span>
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-800">
+            <h2 className="font-display text-3xl sm:text-4xl font-bold text-slate-800">
               What our members say
             </h2>
             <p className="mt-3 text-slate-500 text-lg max-w-md mx-auto">
@@ -77,12 +77,12 @@ export default function StatsSection() {
                 {/* Stars */}
                 <div className="flex gap-0.5 mb-4">
                   {Array.from({ length: rating }).map((_, j) => (
-                    <Star key={j} size={13} className="text-amber-400 fill-amber-400" />
+                    <Star key={j} size={13} className="text-gold-400 fill-gold-400" />
                   ))}
                 </div>
 
                 {/* Quote */}
-                <p className="text-sm text-slate-600 leading-relaxed flex-1">
+                <p className="font-serif italic text-sm text-slate-600 leading-relaxed flex-1">
                   &ldquo;{quote}&rdquo;
                 </p>
 

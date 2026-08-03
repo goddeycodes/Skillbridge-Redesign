@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { LogOut, Bell, User, ChevronDown, Zap } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import Logo from '../shared/Logo';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -11,7 +12,6 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const menuRef = useRef(null);
 
-  // Close dropdown on outside click
   useEffect(() => {
     const handler = (e) => { if (menuRef.current && !menuRef.current.contains(e.target)) setOpen(false); };
     document.addEventListener('mousedown', handler);
@@ -27,16 +27,7 @@ export default function Navbar() {
     <header className="h-16 bg-white border-b border-slate-100 sticky top-0 z-40">
       <div className="max-w-6xl mx-auto h-full px-4 flex items-center justify-between">
 
-        {/* Logo */}
-        <Link href="/dashboard" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center">
-            <svg width="18" height="18" viewBox="0 0 22 22" fill="none">
-              <path d="M4 11C4 7.13 7.13 4 11 4s7 3.13 7 7-3.13 7-7 7-7-3.13-7-7Z" stroke="white" strokeWidth="1.5"/>
-              <path d="M8 11h6M11 8v6" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
-            </svg>
-          </div>
-          <span className="font-bold text-slate-800 text-lg tracking-tight">SkillBridge</span>
-        </Link>
+        <Logo href="/dashboard" size={26} />
 
         {/* Nav links */}
         <nav className="hidden md:flex items-center gap-1">
@@ -59,16 +50,15 @@ export default function Navbar() {
         {/* Right side */}
         <div className="flex items-center gap-2">
           {/* Credits badge */}
-          <div className="hidden sm:flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-amber-50 border border-amber-100">
-            <Zap size={13} className="text-amber-500" />
-            <span className="text-xs font-semibold text-amber-700">{user?.credits ?? 0} credits</span>
+          <div className="hidden sm:flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-gold-50 border border-gold-100">
+            <Zap size={13} className="text-gold-500" />
+            <span className="text-xs font-semibold text-gold-700">{user?.credits ?? 0} credits</span>
           </div>
 
           {/* Notifications */}
           <button className="relative p-2 rounded-lg text-slate-500 hover:bg-slate-50 transition-colors">
             <Bell size={18} />
-            {/* Unread dot */}
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-brand-500" />
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-accent-500" />
           </button>
 
           {/* Avatar dropdown */}

@@ -12,13 +12,13 @@ function FloatingCard({ className, children }) {
 
 export default function HeroSection() {
   return (
-    <section className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-brand-900 via-brand-800 to-violet-900">
+    <section className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-brand-900 via-brand-800 to-learn-700">
 
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 -left-20 w-96 h-96 bg-brand-600/20 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-violet-600/20 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-brand-500/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-learn-500/20 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gold-500/5 rounded-full blur-3xl" />
         {/* Grid pattern */}
         <div className="absolute inset-0 opacity-5"
           style={{ backgroundImage: 'radial-gradient(circle, #ffffff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
@@ -31,13 +31,13 @@ export default function HeroSection() {
           <div className="text-center lg:text-left">
             {/* Pill badge */}
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/20 text-white/80 text-xs font-medium mb-6">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="w-1.5 h-1.5 rounded-full bg-success-400 animate-pulse" />
               Free to join — no subscription required
             </div>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight tracking-tight">
+            <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight tracking-tight">
               Trade skills.<br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-300 to-violet-300">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-300 to-learn-400">
                 Learn anything.
               </span><br />
               Grow together.
@@ -52,7 +52,7 @@ export default function HeroSection() {
             {/* CTAs */}
             <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
               <Link href="/auth/register"
-                className="flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-white text-brand-700 font-semibold text-sm hover:bg-brand-50 transition-all shadow-lg shadow-brand-900/20 hover:shadow-xl hover:-translate-y-0.5">
+                className="flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-accent-500 text-white font-semibold text-sm hover:bg-accent-600 transition-all shadow-lg shadow-accent-900/20 hover:shadow-xl hover:-translate-y-0.5">
                 Start exchanging skills
                 <ArrowRight size={16} />
               </Link>
@@ -65,17 +65,17 @@ export default function HeroSection() {
             {/* Social proof strip */}
             <div className="mt-10 flex items-center gap-6 justify-center lg:justify-start">
               <div className="flex items-center gap-1.5 text-white/60 text-sm">
-                <Zap size={14} className="text-amber-400" />
+                <Zap size={14} className="text-gold-400" />
                 10 free credits on signup
               </div>
               <div className="w-px h-4 bg-white/20" />
               <div className="flex items-center gap-1.5 text-white/60 text-sm">
-                <Users size={14} className="text-emerald-400" />
+                <Users size={14} className="text-success-400" />
                 AI-powered matching
               </div>
               <div className="w-px h-4 bg-white/20" />
               <div className="flex items-center gap-1.5 text-white/60 text-sm">
-                <Star size={14} className="text-violet-400" />
+                <Star size={14} className="text-learn-400" />
                 Verified skills
               </div>
             </div>
@@ -88,14 +88,14 @@ export default function HeroSection() {
             <div className="relative z-10 bg-white rounded-2xl shadow-2xl p-5 w-72">
               <div className="flex items-center justify-between mb-4">
                 <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Your best match</p>
-                <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">92% match</span>
+                <span className="text-xs font-bold text-success-600 bg-success-50 px-2 py-0.5 rounded-full">92% match</span>
               </div>
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-brand-400 to-violet-500 flex items-center justify-center text-white font-bold text-sm">AK</div>
+                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-brand-400 to-learn-500 flex items-center justify-center text-white font-bold text-sm">AK</div>
                 <div>
                   <p className="font-semibold text-slate-800 text-sm">Ama Kofi</p>
                   <p className="text-xs text-slate-400 flex items-center gap-1">
-                    <Star size={10} className="text-amber-400 fill-amber-400" /> 4.9 · Accra, Ghana
+                    <Star size={10} className="text-gold-400 fill-gold-400" /> 4.9 · Accra, Ghana
                   </p>
                 </div>
               </div>
@@ -105,11 +105,11 @@ export default function HeroSection() {
                   teach <span className="font-semibold text-slate-800 ml-1">Python Programming</span>
                 </div>
                 <div className="border-t border-slate-100 pt-2 flex items-center gap-2 text-slate-600">
-                  <span className="w-5 h-5 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center text-[10px] font-bold shrink-0">AK</span>
+                  <span className="w-5 h-5 rounded-full bg-learn-100 text-learn-600 flex items-center justify-center text-[10px] font-bold shrink-0">AK</span>
                   teaches <span className="font-semibold text-slate-800 ml-1">Graphic Design</span>
                 </div>
               </div>
-              <button className="mt-3 w-full py-2.5 rounded-xl bg-brand-600 text-white text-xs font-semibold hover:bg-brand-700 transition-colors">
+              <button className="mt-3 w-full py-2.5 rounded-xl bg-accent-500 text-white text-xs font-semibold hover:bg-accent-600 transition-colors">
                 Book a session
               </button>
             </div>
@@ -117,8 +117,8 @@ export default function HeroSection() {
             {/* Floating cards */}
             <FloatingCard className="-top-4 -left-8 w-52">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center">
-                  <Zap size={14} className="text-emerald-600" />
+                <div className="w-8 h-8 rounded-lg bg-success-100 flex items-center justify-center">
+                  <Zap size={14} className="text-success-600" />
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-slate-800">Credit earned!</p>
@@ -139,7 +139,7 @@ export default function HeroSection() {
             <FloatingCard className="-top-8 -right-4 w-48">
               <div className="flex items-center gap-2 mb-1.5">
                 {[1,2,3,4,5].map(i => (
-                  <Star key={i} size={11} className="text-amber-400 fill-amber-400" />
+                  <Star key={i} size={11} className="text-gold-400 fill-gold-400" />
                 ))}
               </div>
               <p className="text-xs font-semibold text-slate-800">"Best learning experience!"</p>
@@ -148,8 +148,8 @@ export default function HeroSection() {
 
             <FloatingCard className="-bottom-2 -right-8 w-44">
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-full bg-violet-100 flex items-center justify-center">
-                  <Users size={12} className="text-violet-600" />
+                <div className="w-7 h-7 rounded-full bg-learn-100 flex items-center justify-center">
+                  <Users size={12} className="text-learn-600" />
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-slate-800">New match!</p>
