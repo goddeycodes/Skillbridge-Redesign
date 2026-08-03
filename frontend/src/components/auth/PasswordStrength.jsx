@@ -9,7 +9,7 @@ const checks = [
 export default function PasswordStrength({ password }) {
   if (!password) return null;
   const passed = checks.filter(c => c.test(password)).length;
-  const colors = ['bg-red-400', 'bg-yellow-400', 'bg-brand-500'];
+  const colors = ['bg-red-400', 'bg-gold-400', 'bg-brand-500'];
   const color  = colors[Math.min(passed - 1, 2)] || 'bg-slate-200';
 
   return (

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ArrowRight, Zap } from 'lucide-react';
+import Logo from '../shared/Logo';
 
 export default function CTASection() {
   return (
@@ -7,7 +8,7 @@ export default function CTASection() {
       {/* CTA Banner */}
       <section className="py-24 bg-slate-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
-          <div className="bg-gradient-to-br from-brand-900 via-brand-800 to-violet-900 rounded-3xl p-10 sm:p-16 relative overflow-hidden">
+          <div className="bg-gradient-to-br from-brand-900 via-brand-800 to-learn-700 rounded-3xl p-10 sm:p-16 relative overflow-hidden">
             {/* Background dots */}
             <div className="absolute inset-0 pointer-events-none opacity-10"
               style={{ backgroundImage: 'radial-gradient(circle, #ffffff 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
@@ -16,11 +17,11 @@ export default function CTASection() {
 
             <div className="relative">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/20 text-white/70 text-xs font-medium mb-6">
-                <Zap size={12} className="text-amber-400" />
+                <Zap size={12} className="text-gold-400" />
                 Join free — get 10 credits instantly
               </div>
 
-              <h2 className="text-3xl sm:text-5xl font-bold text-white leading-tight">
+              <h2 className="font-display text-3xl sm:text-5xl font-bold text-white leading-tight">
                 Ready to start<br />exchanging skills?
               </h2>
 
@@ -31,7 +32,7 @@ export default function CTASection() {
 
               <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
                 <Link href="/auth/register"
-                  className="flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-white text-brand-700 font-bold text-sm hover:bg-brand-50 transition-all shadow-lg shadow-brand-900/20 hover:-translate-y-0.5">
+                  className="flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-accent-500 text-white font-bold text-sm hover:bg-accent-600 transition-all shadow-lg shadow-accent-900/20 hover:-translate-y-0.5">
                   Create your free account
                   <ArrowRight size={16} />
                 </Link>
@@ -56,14 +57,7 @@ export default function CTASection() {
 
             {/* Brand */}
             <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-brand-600 flex items-center justify-center">
-                <svg width="15" height="15" viewBox="0 0 22 22" fill="none">
-                  <path d="M4 11C4 7.13 7.13 4 11 4s7 3.13 7 7-3.13 7-7 7-7-3.13-7-7Z"
-                    stroke="white" strokeWidth="1.5"/>
-                  <path d="M8 11h6M11 8v6" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
-                </svg>
-              </div>
-              <span className="font-bold text-slate-800">SkillBridge</span>
+              <Logo size={22} />
               <span className="text-slate-300 text-sm ml-2">
                 &copy; {new Date().getFullYear()} SkillBridge
               </span>

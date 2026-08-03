@@ -44,7 +44,7 @@ export default function RateSessionModal({ open, onClose, session, onRated }) {
           >
             <Star
               size={32}
-              className={i <= (hover || score) ? 'text-amber-400 fill-amber-400' : 'text-slate-200 fill-slate-200'}
+              className={i <= (hover || score) ? 'text-gold-400 fill-gold-400' : 'text-slate-200 fill-slate-200'}
             />
           </button>
         ))}

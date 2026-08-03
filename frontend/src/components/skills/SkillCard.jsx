@@ -24,11 +24,11 @@ export default function SkillCard({ skill, isOwner, onEdit, onDelete }) {
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-start gap-3">
           <div className={`mt-0.5 w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-            isTeach ? 'bg-brand-50' : 'bg-violet-50'
+            isTeach ? 'bg-brand-50' : 'bg-learn-50'
           }`}>
             {isTeach
               ? <GraduationCap size={15} className="text-brand-600" />
-              : <BookOpen size={15} className="text-violet-600" />}
+              : <BookOpen size={15} className="text-learn-600" />}
           </div>
           <div>
             <p className="font-semibold text-slate-800 leading-tight">{skill.name}</p>

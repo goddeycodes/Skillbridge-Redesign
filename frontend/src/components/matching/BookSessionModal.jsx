@@ -16,7 +16,6 @@ const schema = z.object({
   notes:       z.string().max(300, 'Max 300 characters').optional().or(z.literal('')),
 });
 
-// Get min datetime string (now + 1 hour) for the input
 const minDateTime = () => {
   const d = new Date(Date.now() + 60 * 60 * 1000);
   d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
@@ -46,7 +45,7 @@ export default function BookSessionModal({ open, onClose, match }) {
         meetingLink: data.meetingLink || undefined,
         notes:       data.notes || undefined,
       });
-      await refreshUser(); // credits just changed
+      await refreshUser();
       toast.success('Session booked! Check your Sessions tab.');
       reset();
       onClose();
@@ -67,7 +66,7 @@ export default function BookSessionModal({ open, onClose, match }) {
       </div>
 
       {insufficientCredits && (
-        <div className="mb-4 p-3 rounded-xl bg-amber-50 border border-amber-100 text-sm text-amber-700 flex items-center gap-2">
+        <div className="mb-4 p-3 rounded-xl bg-gold-50 border border-gold-100 text-sm text-gold-700 flex items-center gap-2">
           <Zap size={14} /> You need at least 1 credit to book a session.
         </div>
       )}
@@ -107,7 +106,7 @@ export default function BookSessionModal({ open, onClose, match }) {
 
         <div className="flex items-center justify-between pt-2">
           <p className="text-xs text-slate-400 flex items-center gap-1">
-            <Zap size={12} className="text-amber-500" /> Costs 1 credit
+            <Zap size={12} className="text-gold-500" /> Costs 1 credit
           </p>
           <div className="flex gap-2">
             <button type="button" onClick={onClose} className="sb-btn-ghost">Cancel</button>

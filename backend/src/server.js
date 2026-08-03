@@ -1,5 +1,6 @@
 const express = require('express');
 const http = require('http');
+const net = require('net');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
@@ -68,20 +69,52 @@ app.use((err, req, res, next) => {
   });
 });
 
-// ─── Start — connect DBs first, then listen ──────────────────
+// ─── Start — connect DBs if available, then listen ───────────
 const PORT = process.env.PORT || 5000;
 
 const start = async () => {
   try {
-    await connectPostgres();
-    await connectMongo();
-    httpServer.listen(PORT, () =>
-      console.log(`SkillBridge API → http://localhost:${PORT}`)
-    );
+    await Promise.allSettled([
+      connectPostgres(),
+      connectMongo(),
+    ]);
   } catch (err) {
-    console.error('Failed to connect to databases:', err.message);
-    process.exit(1);
+    console.warn('Database startup check completed with warnings.');
   }
+
+  const listenWithFallback = async (port, attempt = 0) => {
+    const canBind = await new Promise((resolve) => {
+      const tester = net.createConnection({ host: '127.0.0.1', port });
+      tester.on('connect', () => {
+        tester.end();
+        resolve(false);
+      });
+      tester.on('error', (err) => {
+        if (err.code === 'ECONNREFUSED') {
+          resolve(true);
+        } else {
+          resolve(false);
+        }
+      });
+    });
+
+    if (!canBind) {
+      if (attempt < 5) {
+        const nextPort = port + 1;
+        console.warn(`Port ${port} is busy. Trying ${nextPort} instead.`);
+        return listenWithFallback(nextPort, attempt + 1);
+      }
+
+      console.error(`Unable to bind to port ${port}`);
+      process.exit(1);
+    }
+
+    httpServer.listen(port, () => {
+      console.log(`SkillBridge API → http://localhost:${port}`);
+    });
+  };
+
+  listenWithFallback(Number(PORT));
 };
 
 start();

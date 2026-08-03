@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { matchAPI } from '../../services/api';
 import MatchCard from '../../components/matching/MatchCard';
 
-// Skeleton card shown while matches are loading
 function SkeletonCard() {
   return (
     <div className="sb-card p-5 flex flex-col gap-4 animate-pulse">
@@ -59,7 +58,6 @@ export default function MatchingPage() {
   return (
     <div className="space-y-6">
 
-      {/* Header — always visible immediately */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
@@ -79,7 +77,6 @@ export default function MatchingPage() {
         )}
       </div>
 
-      {/* Loading — show skeleton grid instead of blank spinner */}
       {loading && (
         <>
           <p className="text-sm text-slate-400 animate-pulse">
@@ -91,7 +88,6 @@ export default function MatchingPage() {
         </>
       )}
 
-      {/* Error / incomplete-skills states */}
       {!loading && error && (
         <div className="sb-card p-10 flex flex-col items-center text-center">
           {error.code === 'NO_SKILLS' || error.code === 'INCOMPLETE_SKILLS' ? (
@@ -100,8 +96,8 @@ export default function MatchingPage() {
                 <div className="w-12 h-12 rounded-xl bg-brand-50 flex items-center justify-center">
                   <GraduationCap size={22} className="text-brand-500" />
                 </div>
-                <div className="w-12 h-12 rounded-xl bg-violet-50 flex items-center justify-center">
-                  <BookOpen size={22} className="text-violet-500" />
+                <div className="w-12 h-12 rounded-xl bg-learn-50 flex items-center justify-center">
+                  <BookOpen size={22} className="text-learn-500" />
                 </div>
               </div>
               <p className="font-semibold text-slate-700">{error.message}</p>
@@ -116,7 +112,7 @@ export default function MatchingPage() {
             </>
           ) : (
             <>
-              <AlertCircle size={32} className="text-amber-400 mb-3" />
+              <AlertCircle size={32} className="text-gold-400 mb-3" />
               <p className="font-semibold text-slate-700">{error.message}</p>
               <button onClick={loadMatches}
                 className="mt-4 px-4 py-2 text-sm font-semibold text-brand-600 bg-brand-50 rounded-lg hover:bg-brand-100 transition-colors">
@@ -127,7 +123,6 @@ export default function MatchingPage() {
         </div>
       )}
 
-      {/* Empty */}
       {!loading && !error && matches.length === 0 && (
         <div className="sb-card p-10 flex flex-col items-center text-center text-slate-400">
           <Sparkles size={32} className="mb-3 text-slate-200" />
@@ -143,7 +138,6 @@ export default function MatchingPage() {
         </div>
       )}
 
-      {/* Results */}
       {!loading && !error && matches.length > 0 && (
         <>
           <p className="text-sm text-slate-400">

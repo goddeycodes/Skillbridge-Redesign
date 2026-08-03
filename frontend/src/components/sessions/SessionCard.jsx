@@ -71,7 +71,7 @@ export default function SessionCard({ session, onOpenChat, onComplete, onCancel,
             <button
               onClick={() => onComplete(session.id)}
               title="Mark complete"
-              className="p-2 rounded-lg text-emerald-500 hover:bg-emerald-50 transition-colors"
+              className="p-2 rounded-lg text-success-500 hover:bg-success-50 transition-colors"
             >
               <CheckCircle2 size={16} />
             </button>
@@ -88,7 +88,7 @@ export default function SessionCard({ session, onOpenChat, onComplete, onCancel,
         {canRate && (
           <button
             onClick={() => onRate(session)}
-            className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-amber-600 bg-amber-50 rounded-lg hover:bg-amber-100 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gold-600 bg-gold-50 rounded-lg hover:bg-gold-100 transition-colors"
           >
             <Star size={13} /> Rate
           </button>

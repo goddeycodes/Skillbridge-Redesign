@@ -1,7 +1,7 @@
 'use client';
 /**
  * Circular progress ring showing match percentage.
- * Color shifts from amber (low) to brand blue (high) to green (excellent).
+ * Color shifts from gold (low) to brand teal (mid) to success green (high).
  */
 export default function MatchScoreRing({ percent, size = 56 }) {
   const radius = (size - 6) / 2;
@@ -9,9 +9,9 @@ export default function MatchScoreRing({ percent, size = 56 }) {
   const offset = circumference - (percent / 100) * circumference;
 
   const color =
-    percent >= 75 ? '#059669' :   // emerald
-    percent >= 50 ? '#2563eb' :   // brand blue
-    '#f59e0b';                    // amber
+    percent >= 75 ? '#3D7D57' :   // success-600
+    percent >= 50 ? '#1C6E6A' :   // brand-600
+    '#C7861F';                    // gold-600
 
   return (
     <div className="relative shrink-0" style={{ width: size, height: size }}>
