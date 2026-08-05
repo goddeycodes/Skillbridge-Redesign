@@ -1,7 +1,8 @@
 'use client';
 import { useState } from 'react';
-import { User, Edit2, MapPin, Clock, Star, Zap, CheckCircle } from 'lucide-react';
+import { Edit2, MapPin, Clock, Star, Zap, CheckCircle, User as UserIcon } from 'lucide-react';
 import EditProfileModal from './EditProfileModal';
+import Avatar from '../shared/Avatar';
 
 export default function ProfileHeader({ user, isOwner, stats }) {
   const [editing, setEditing] = useState(false);
@@ -22,11 +23,7 @@ export default function ProfileHeader({ user, isOwner, stats }) {
           {/* Avatar row */}
           <div className="flex items-end justify-between -mt-12 mb-4">
             <div className="relative">
-              <div className="w-24 h-24 rounded-2xl border-4 border-white shadow-md bg-brand-100 flex items-center justify-center overflow-hidden">
-                {user?.avatar
-                  ? <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
-                  : <User size={36} className="text-brand-400" />}
-              </div>
+              <Avatar user={user} size={96} className="border-4 border-white shadow-md !rounded-2xl" bg="bg-brand-100" text="text-brand-400" />
               {user?.isVerified && (
                 <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5">
                   <CheckCircle size={18} className="text-brand-500 fill-brand-50" />
@@ -62,10 +59,10 @@ export default function ProfileHeader({ user, isOwner, stats }) {
           {/* Stats row */}
           <div className="flex flex-wrap gap-5 mt-5 pt-5 border-t border-slate-100">
             {[
-              { icon: Zap,  label: 'Credits',      value: user?.credits ?? 0,                       color: 'text-gold-500' },
-              { icon: Star, label: 'Reputation',    value: user?.reputation?.toFixed(1) ?? '0.0',    color: 'text-gold-500' },
-              { icon: User, label: 'Skills taught', value: stats?.teachCount ?? 0,                   color: 'text-success-500' },
-              { icon: User, label: 'Skills to learn',value: stats?.learnCount ?? 0,                  color: 'text-learn-500' },
+              { icon: Zap,      label: 'Credits',       value: user?.credits ?? 0,                    color: 'text-gold-500' },
+              { icon: Star,     label: 'Reputation',    value: user?.reputation?.toFixed(1) ?? '0.0', color: 'text-gold-500' },
+              { icon: UserIcon, label: 'Skills taught',  value: stats?.teachCount ?? 0,                color: 'text-success-500' },
+              { icon: UserIcon, label: 'Skills to learn',value: stats?.learnCount ?? 0,                color: 'text-learn-500' },
             ].map(({ icon: Icon, label, value, color }) => (
               <div key={label} className="flex items-center gap-2">
                 <Icon size={15} className={color} />

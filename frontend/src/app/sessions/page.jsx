@@ -8,6 +8,7 @@ import { useAuth } from '../../context/AuthContext';
 import SessionCard from '../../components/sessions/SessionCard';
 import ChatModal from '../../components/chat/ChatModal';
 import RateSessionModal from '../../components/sessions/RateSessionModal';
+import ConfirmModal from '../../components/shared/ConfirmModal';
 
 const TABS = [
   { key: 'upcoming',  label: 'Upcoming'  },
@@ -24,6 +25,11 @@ export default function SessionsPage() {
   const [chatSession, setChatSession] = useState(null);
   const [rateSession, setRateSession] = useState(null);
 
+  // Replaces window.confirm() for both destructive actions on this page —
+  // one shared piece of state, disambiguated by `intent`.
+  const [pendingAction, setPendingAction] = useState(null); // { id, intent: 'complete' | 'cancel' }
+  const [actionLoading, setActionLoading] = useState(false);
+
   const loadSessions = useCallback(async (tab) => {
     setLoading(true);
     try {
@@ -38,27 +44,25 @@ export default function SessionsPage() {
 
   useEffect(() => { loadSessions(activeTab); }, [activeTab, loadSessions]);
 
-  const handleComplete = async (id) => {
-    if (!confirm('Mark this session as complete? This will release the credit to the teacher.')) return;
+  const runPendingAction = async () => {
+    if (!pendingAction) return;
+    const { id, intent } = pendingAction;
+    setActionLoading(true);
     try {
-      await sessionsAPI.complete(id);
-      toast.success('Session marked complete!');
+      if (intent === 'complete') {
+        await sessionsAPI.complete(id);
+        toast.success('Session marked complete!');
+      } else {
+        await sessionsAPI.cancel(id);
+        toast.success('Session cancelled, credit refunded.');
+      }
       loadSessions(activeTab);
       refreshUser();
+      setPendingAction(null);
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to complete session.');
-    }
-  };
-
-  const handleCancel = async (id) => {
-    if (!confirm('Cancel this session? Your credit will be refunded.')) return;
-    try {
-      await sessionsAPI.cancel(id);
-      toast.success('Session cancelled, credit refunded.');
-      loadSessions(activeTab);
-      refreshUser();
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to cancel session.');
+      toast.error(err.response?.data?.message || `Failed to ${intent} session.`);
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -111,8 +115,8 @@ export default function SessionsPage() {
               key={s.id}
               session={s}
               onOpenChat={setChatSession}
-              onComplete={handleComplete}
-              onCancel={handleCancel}
+              onComplete={(id) => setPendingAction({ id, intent: 'complete' })}
+              onCancel={(id) => setPendingAction({ id, intent: 'cancel' })}
               onRate={setRateSession}
             />
           ))}
@@ -125,6 +129,21 @@ export default function SessionsPage() {
         onClose={() => setRateSession(null)}
         session={rateSession}
         onRated={() => loadSessions(activeTab)}
+      />
+
+      <ConfirmModal
+        open={!!pendingAction}
+        onClose={() => setPendingAction(null)}
+        onConfirm={runPendingAction}
+        loading={actionLoading}
+        danger={pendingAction?.intent === 'cancel'}
+        title={pendingAction?.intent === 'complete' ? 'Mark session complete?' : 'Cancel this session?'}
+        description={
+          pendingAction?.intent === 'complete'
+            ? 'This releases the credit to the teacher. This can\'t be undone.'
+            : 'Your credit will be refunded. This can\'t be undone.'
+        }
+        confirmLabel={pendingAction?.intent === 'complete' ? 'Mark complete' : 'Cancel session'}
       />
     </div>
   );

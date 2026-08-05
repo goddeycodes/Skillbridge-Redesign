@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
-import { BookOpen, Plus, Search, Loader2, RefreshCw } from 'lucide-react';
+import { BookOpen, Plus, Search, RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { communityAPI } from '../../services/api';
 import PostCard from '../../components/community/PostCard';
@@ -11,6 +11,30 @@ const CATEGORIES = [
   'All', 'Technology', 'Design', 'Business', 'Language', 'Music',
   'Arts & Crafts', 'Cooking', 'Fitness', 'Academic', 'General',
 ];
+
+function SkeletonPostCard() {
+  return (
+    <div className="sb-card p-5 flex flex-col gap-3 animate-pulse">
+      <div className="flex items-center gap-2.5">
+        <div className="w-8 h-8 rounded-full bg-slate-100" />
+        <div className="space-y-1.5">
+          <div className="h-3 w-24 bg-slate-100 rounded" />
+          <div className="h-2.5 w-16 bg-slate-100 rounded" />
+        </div>
+      </div>
+      <div className="space-y-2">
+        <div className="h-4 w-4/5 bg-slate-100 rounded" />
+        <div className="h-3 w-full bg-slate-100 rounded" />
+        <div className="h-3 w-3/5 bg-slate-100 rounded" />
+      </div>
+      <div className="flex gap-4 pt-1">
+        <div className="h-3 w-8 bg-slate-100 rounded" />
+        <div className="h-3 w-8 bg-slate-100 rounded" />
+        <div className="h-3 w-8 bg-slate-100 rounded" />
+      </div>
+    </div>
+  );
+}
 
 export default function CommunityPage() {
   const [posts,       setPosts]       = useState([]);
@@ -117,8 +141,8 @@ export default function CommunityPage() {
 
       {/* Posts grid */}
       {loading ? (
-        <div className="flex justify-center py-16">
-          <Loader2 size={28} className="animate-spin text-brand-500" />
+        <div className="grid sm:grid-cols-2 gap-4">
+          {[1,2,3,4].map(i => <SkeletonPostCard key={i} />)}
         </div>
       ) : posts.length === 0 ? (
         <div className="sb-card p-12 flex flex-col items-center text-center text-slate-400">

@@ -4,12 +4,15 @@ import { Plus, GraduationCap, BookOpen } from 'lucide-react';
 import toast from 'react-hot-toast';
 import SkillCard from './SkillCard';
 import SkillFormModal from './SkillFormModal';
+import ConfirmModal from '../shared/ConfirmModal';
 import { skillsAPI } from '../../services/api';
 
 export default function SkillsSection({ teachSkills, learnSkills, isOwner, onRefresh }) {
   const [formOpen,     setFormOpen]     = useState(false);
   const [editingSkill, setEditingSkill] = useState(null);
   const [activeTab,    setActiveTab]    = useState('teach');
+  const [pendingDelete, setPendingDelete] = useState(null); // skill object awaiting confirmation
+  const [deleting, setDeleting] = useState(false);
 
   const openAdd = (type) => {
     setEditingSkill(null);
@@ -22,14 +25,18 @@ export default function SkillsSection({ teachSkills, learnSkills, isOwner, onRef
     setFormOpen(true);
   };
 
-  const handleDelete = async (id) => {
-    if (!confirm('Remove this skill?')) return;
+  const confirmDelete = async () => {
+    if (!pendingDelete) return;
+    setDeleting(true);
     try {
-      await skillsAPI.remove(id);
+      await skillsAPI.remove(pendingDelete._id);
       toast.success('Skill removed.');
       onRefresh();
+      setPendingDelete(null);
     } catch {
       toast.error('Failed to remove skill.');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -103,7 +110,7 @@ export default function SkillsSection({ teachSkills, learnSkills, isOwner, onRef
                 skill={skill}
                 isOwner={isOwner}
                 onEdit={openEdit}
-                onDelete={handleDelete}
+                onDelete={() => setPendingDelete(skill)}
               />
             ))}
             {isOwner && shown.length < 10 && (
@@ -124,6 +131,17 @@ export default function SkillsSection({ teachSkills, learnSkills, isOwner, onRef
         onClose={() => { setFormOpen(false); setEditingSkill(null); }}
         onSaved={onRefresh}
         skill={editingSkill}
+      />
+
+      <ConfirmModal
+        open={!!pendingDelete}
+        onClose={() => setPendingDelete(null)}
+        onConfirm={confirmDelete}
+        loading={deleting}
+        danger
+        title="Remove this skill?"
+        description={pendingDelete ? `"${pendingDelete.name}" will be removed from your ${pendingDelete.type === 'teach' ? 'teaching' : 'learning'} list. This can't be undone.` : ''}
+        confirmLabel="Remove skill"
       />
     </div>
   );

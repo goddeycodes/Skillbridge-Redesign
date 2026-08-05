@@ -1,7 +1,8 @@
 'use client';
 import { useState } from 'react';
-import { ArrowRightLeft, MapPin, Star, CheckCircle, Calendar, User } from 'lucide-react';
+import { ArrowRightLeft, MapPin, Star, CheckCircle, Calendar } from 'lucide-react';
 import Badge from '../shared/Badge';
+import Avatar from '../shared/Avatar';
 import MatchScoreRing from './MatchScoreRing';
 import BookSessionModal from './BookSessionModal';
 
@@ -9,7 +10,7 @@ const PROFICIENCY_COLOR = { beginner: 'slate', intermediate: 'blue', advanced: '
 
 export default function MatchCard({ match }) {
   const [booking, setBooking] = useState(false);
-  const { user, matchPercent, youTeach, youLearn, theyTeach, theyLearn, theyTeachCategory, theyTeachProf, theyTeachLang } = match;
+  const { user, matchPercent, youTeach, theyTeach, theyTeachCategory, theyTeachProf, theyTeachLang } = match;
 
   return (
     <>
@@ -18,11 +19,7 @@ export default function MatchCard({ match }) {
         {/* Header — avatar, name, score */}
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-12 h-12 rounded-xl bg-brand-100 flex items-center justify-center overflow-hidden shrink-0">
-              {user?.avatar
-                ? <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
-                : <User size={20} className="text-brand-500" />}
-            </div>
+            <Avatar user={user} size={48} bg="bg-brand-100" text="text-brand-500" />
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
                 <p className="font-semibold text-slate-800 truncate">{user?.name}</p>

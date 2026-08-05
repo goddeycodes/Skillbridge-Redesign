@@ -40,12 +40,14 @@ export default function SkillCard({ skill, isOwner, onEdit, onDelete }) {
           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
             <button
               onClick={() => onEdit(skill)}
+              aria-label={`Edit ${skill.name}`}
               className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
             >
               <Edit2 size={13} />
             </button>
             <button
               onClick={() => onDelete(skill._id)}
+              aria-label={`Delete ${skill.name}`}
               className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors"
             >
               <Trash2 size={13} />

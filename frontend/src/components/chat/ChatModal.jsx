@@ -20,7 +20,6 @@ export default function ChatModal({ open, onClose, session }) {
   const roomId    = session?.roomId;
   const otherUser = session?.otherUser;
 
-  // Load chat history when opened
   useEffect(() => {
     if (!open || !otherUser?.id) return;
     setLoading(true);
@@ -30,7 +29,6 @@ export default function ChatModal({ open, onClose, session }) {
       .finally(() => setLoading(false));
   }, [open, otherUser?.id]);
 
-  // Join room + listen for live events
   useEffect(() => {
     if (!socket || !open || !roomId) return;
 
@@ -54,7 +52,6 @@ export default function ChatModal({ open, onClose, session }) {
     };
   }, [socket, open, roomId, otherUser?.id]);
 
-  // Auto-scroll to bottom on new messages
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, otherTyping]);
@@ -80,7 +77,7 @@ export default function ChatModal({ open, onClose, session }) {
       <div className="flex flex-col h-[60vh] -mx-6 -mb-6">
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-6 py-2 space-y-3">
+        <div className="flex-1 overflow-y-auto px-6 py-2 space-y-3" aria-live="polite">
           {loading ? (
             <div className="flex justify-center py-10"><Loader2 className="animate-spin text-brand-400" size={24} /></div>
           ) : messages.length === 0 ? (
@@ -106,7 +103,7 @@ export default function ChatModal({ open, onClose, session }) {
             })
           )}
           {otherTyping && (
-            <div className="flex justify-start">
+            <div className="flex justify-start" aria-label={`${otherUser?.name || 'They'} is typing`}>
               <div className="bg-slate-100 rounded-2xl rounded-bl-sm px-3.5 py-2.5 flex gap-1">
                 {[0,1,2].map(i => (
                   <span key={i} className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
@@ -125,11 +122,13 @@ export default function ChatModal({ open, onClose, session }) {
             onKeyDown={e => { if (e.key === 'Enter') sendMessage(); }}
             disabled={!socket}
             placeholder={socket ? 'Type a message…' : 'Connecting…'}
+            aria-label="Message"
             className="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-60"
           />
           <button
             onClick={sendMessage}
             disabled={!input.trim() || !socket}
+            aria-label="Send message"
             className="p-2.5 rounded-xl bg-brand-600 text-white disabled:opacity-40 hover:bg-brand-700 transition-colors"
           >
             <Send size={16} />

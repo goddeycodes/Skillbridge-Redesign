@@ -70,6 +70,7 @@ export default function SessionCard({ session, onOpenChat, onComplete, onCancel,
           <>
             <button
               onClick={() => onComplete(session.id)}
+              aria-label="Mark session complete"
               title="Mark complete"
               className="p-2 rounded-lg text-success-500 hover:bg-success-50 transition-colors"
             >
@@ -77,6 +78,7 @@ export default function SessionCard({ session, onOpenChat, onComplete, onCancel,
             </button>
             <button
               onClick={() => onCancel(session.id)}
+              aria-label="Cancel session"
               title="Cancel"
               className="p-2 rounded-lg text-red-400 hover:bg-red-50 transition-colors"
             >
