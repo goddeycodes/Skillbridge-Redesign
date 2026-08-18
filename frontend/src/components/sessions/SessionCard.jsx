@@ -1,5 +1,5 @@
 'use client';
-import { Calendar, Clock, Video, MessageCircle, CheckCircle2, XCircle, User, Star } from 'lucide-react';
+import { Calendar, Clock, Video, MessageCircle, CheckCircle2, XCircle, User, Star, Check, Hourglass } from 'lucide-react';
 import { format, isPast, isToday } from 'date-fns';
 import Badge from '../shared/Badge';
 
@@ -10,10 +10,11 @@ const STATUS_CONFIG = {
   cancelled: { label: 'Cancelled', color: 'red'   },
 };
 
-export default function SessionCard({ session, onOpenChat, onComplete, onCancel, onRate }) {
+export default function SessionCard({ session, onOpenChat, onAccept, onDecline, onComplete, onCancel, onRate }) {
   const { otherUser, role, title, scheduledAt, duration, status, meetingLink, canRate } = session;
   const date = new Date(scheduledAt);
-  const isUpcoming = !isPast(date) && (status === 'pending' || status === 'confirmed');
+  const isPending   = status === 'pending';
+  const isConfirmed = status === 'confirmed';
   const statusCfg = STATUS_CONFIG[status] || STATUS_CONFIG.pending;
 
   return (
@@ -32,6 +33,16 @@ export default function SessionCard({ session, onOpenChat, onComplete, onCancel,
             <p className="text-xs text-slate-400">
               {role === 'teacher' ? 'Teaching' : 'Learning from'} <span className="font-medium text-slate-500">{otherUser?.name}</span>
             </p>
+            {isPending && role === 'teacher' && (
+              <p className="text-[11px] text-amber-600 font-medium mt-0.5 flex items-center gap-1">
+                <Hourglass size={10} /> Waiting on your response
+              </p>
+            )}
+            {isPending && role === 'learner' && (
+              <p className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1">
+                <Hourglass size={10} /> Awaiting response from {otherUser?.name}
+              </p>
+            )}
           </div>
         </div>
         <Badge label={statusCfg.label} color={statusCfg.color} />
@@ -57,7 +68,7 @@ export default function SessionCard({ session, onOpenChat, onComplete, onCancel,
           <MessageCircle size={13} /> Chat
         </button>
 
-        {meetingLink && isUpcoming && (
+        {meetingLink && isConfirmed && !isPast(date) && (
           <a
             href={meetingLink} target="_blank" rel="noopener noreferrer"
             className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium text-brand-600 bg-brand-50 rounded-lg hover:bg-brand-100 transition-colors"
@@ -66,7 +77,32 @@ export default function SessionCard({ session, onOpenChat, onComplete, onCancel,
           </a>
         )}
 
-        {isUpcoming && (
+        {isPending && role === 'teacher' ? (
+          <>
+            <button
+              onClick={() => onAccept(session.id)}
+              title="Accept request"
+              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-success-600 bg-success-50 rounded-lg hover:bg-success-100 transition-colors"
+            >
+              <Check size={14} /> Accept
+            </button>
+            <button
+              onClick={() => onDecline(session.id)}
+              title="Decline request"
+              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-red-500 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
+            >
+              <XCircle size={14} /> Decline
+            </button>
+          </>
+        ) : isPending && role === 'learner' ? (
+          <button
+            onClick={() => onCancel(session.id)}
+            title="Withdraw request"
+            className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-500 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors"
+          >
+            <XCircle size={14} /> Withdraw
+          </button>
+        ) : isConfirmed && (
           <>
             <button
               onClick={() => onComplete(session.id)}

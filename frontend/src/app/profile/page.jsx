@@ -3,13 +3,84 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { BookOpen, GraduationCap, Trophy, Flame, UsersRound, ArrowRight } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { skillsAPI } from '../../services/api';
+import { skillsAPI, sessionsAPI } from '../../services/api';
 import SkillsSection from '../../components/skills/SkillsSection';
 import { Loader2 } from 'lucide-react';
 
+function skillSessionStats(skill, sessions) {
+  const skillId = String(skill._id || skill.id || '');
+  const name = skill.name?.toLowerCase() || '';
+  const related = sessions.filter(s =>
+    String(s.skillId) === skillId ||
+    (name && s.title?.toLowerCase().includes(name))
+  );
+  const active = related.filter(s => s.status !== 'cancelled');
+  const completed = active.filter(s => s.status === 'completed');
+  return {
+    total: active.length,
+    completed: completed.length,
+    hasStarted: active.length > 0,
+    inProgress: active.some(s => s.status === 'pending' || s.status === 'confirmed'),
+  };
+}
+
+function LearningGoalRow({ skill, sessions }) {
+  const stats = skillSessionStats(skill, sessions);
+  const progress = stats.hasStarted
+    ? Math.round((stats.completed / Math.max(stats.total, 1)) * 100)
+    : 0;
+
+  return (
+    <div className="flex items-center justify-between rounded-xl bg-slate-50 p-3 gap-3">
+      <div className="min-w-0">
+        <p className="text-sm font-bold">{skill.name}</p>
+        <p className="text-xs text-slate-400">{skill.proficiency || 'Beginner'} • {skill.category || 'Skill'}</p>
+      </div>
+      <div className="flex shrink-0 flex-col items-end gap-1.5">
+        {!stats.hasStarted ? (
+          <Link
+            href="/matching"
+            className="rounded-full bg-slate-200 px-2.5 py-1 text-[10px] font-bold text-slate-600 hover:bg-brand-50 hover:text-brand-700 transition-colors"
+          >
+            Not started
+          </Link>
+        ) : (
+          <>
+            <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${
+              stats.inProgress ? 'bg-brand-100 text-brand-700' : 'bg-success-50 text-success-700'
+            }`}>
+              {stats.inProgress ? 'In progress' : 'Completed'}
+            </span>
+            <span className="h-2 w-20 overflow-hidden rounded-full bg-slate-200">
+              <span
+                className="block h-full rounded-full bg-learn-600 transition-all"
+                style={{ width: `${progress}%` }}
+              />
+            </span>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function ProfilePage(){
- const {user}=useAuth(); const [teach,setTeach]=useState([]); const [learn,setLearn]=useState([]); const [loading,setLoading]=useState(true);
- const load=useCallback(async()=>{try{const r=await skillsAPI.getMySkills();setTeach(r.data.teach||[]);setLearn(r.data.learn||[])}finally{setLoading(false)}},[]);
+ const {user}=useAuth();
+ const [teach,setTeach]=useState([]);
+ const [learn,setLearn]=useState([]);
+ const [sessions,setSessions]=useState([]);
+ const [loading,setLoading]=useState(true);
+ const load=useCallback(async()=>{
+  try{
+   const [skillsRes,sessionsRes]=await Promise.all([
+    skillsAPI.getMySkills(),
+    sessionsAPI.getAll({ status: 'all', role: 'learner' }).catch(()=>({ data: { sessions: [] } })),
+   ]);
+   setTeach(skillsRes.data.teach||[]);
+   setLearn(skillsRes.data.learn||[]);
+   setSessions(sessionsRes.data.sessions||[]);
+  }finally{setLoading(false)}
+ },[]);
  useEffect(()=>{load()},[load]);
  if(loading)return <div className="flex justify-center py-24"><Loader2 className="animate-spin text-brand-600"/></div>;
  return <div className="space-y-6">
@@ -19,7 +90,7 @@ export default function ProfilePage(){
    <div className="mt-6 grid grid-cols-2 gap-3 border-t border-slate-100 pt-5 sm:grid-cols-4"><Stat icon={BookOpen} value={learn.length} label="Learning goals"/><Stat icon={GraduationCap} value={teach.length} label="Teaching skills"/><Stat icon={Trophy} value={user?.reputation?.toFixed?.(1)||'0.0'} label="Reputation"/><Stat icon={UsersRound} value="—" label="Learners helped"/></div>
   </div></section>
   <section className="grid gap-5 lg:grid-cols-2">
-   <div className="sb-card p-6"><div className="flex items-center justify-between"><div><span className="eyebrow"><BookOpen size={13}/> LEARNING</span><h2 className="mt-2 text-lg font-extrabold">Currently learning</h2></div><span className="rounded-xl bg-learn-50 p-2.5 text-learn-600"><BookOpen size={18}/></span></div><div className="mt-4 space-y-2">{learn.length?learn.map(s=><div key={s._id||s.id} className="flex items-center justify-between rounded-xl bg-slate-50 p-3"><div><p className="text-sm font-bold">{s.name}</p><p className="text-xs text-slate-400">{s.proficiency||'Beginner'} • {s.category||'Skill'}</p></div><span className="h-2 w-20 overflow-hidden rounded-full bg-slate-200"><span className="block h-full w-1/3 rounded-full bg-learn-600"/></span></div>):<p className="rounded-xl bg-slate-50 p-4 text-sm text-slate-500">No learning goals yet. Add skills you want to learn.</p>}</div></div>
+   <div className="sb-card p-6"><div className="flex items-center justify-between"><div><span className="eyebrow"><BookOpen size={13}/> LEARNING</span><h2 className="mt-2 text-lg font-extrabold">Learning goals</h2></div><span className="rounded-xl bg-learn-50 p-2.5 text-learn-600"><BookOpen size={18}/></span></div><div className="mt-4 space-y-2">{learn.length?learn.map(s=><LearningGoalRow key={s._id||s.id} skill={s} sessions={sessions}/>):<p className="rounded-xl bg-slate-50 p-4 text-sm text-slate-500">No learning goals yet. Add skills you want to learn.</p>}</div></div>
    <div className="sb-card p-6"><div className="flex items-center justify-between"><div><span className="eyebrow"><GraduationCap size={13}/> TEACHING</span><h2 className="mt-2 text-lg font-extrabold">I can teach</h2></div><span className="rounded-xl bg-brand-50 p-2.5 text-brand-600"><GraduationCap size={18}/></span></div><div className="mt-4 space-y-2">{teach.length?teach.map(s=><div key={s._id||s.id} className="flex items-center justify-between rounded-xl bg-slate-50 p-3"><div><p className="text-sm font-bold">{s.name}</p><p className="text-xs text-slate-400">{s.proficiency||'Beginner'} • {s.category||'Skill'}</p></div><span className="rounded-full bg-brand-50 px-2.5 py-1 text-[10px] font-bold text-brand-700">Teach</span></div>):<p className="rounded-xl bg-slate-50 p-4 text-sm text-slate-500">Add a skill you can teach to help another learner.</p>}</div></div>
   </section>
   <section className="rounded-2xl border border-gold-100 bg-gold-50 p-6"><div className="flex items-start gap-4"><div className="rounded-xl bg-white p-3 text-gold-600"><Flame size={20}/></div><div><h2 className="font-extrabold">Build your learning reputation</h2><p className="mt-1 text-sm leading-6 text-slate-600">Complete sessions, help learners, and contribute useful answers to grow your reputation.</p></div></div></section>

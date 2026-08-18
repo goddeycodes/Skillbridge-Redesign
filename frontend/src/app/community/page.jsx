@@ -1,5 +1,6 @@
 'use client';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { BookOpen, Plus, Search, Loader2, RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { communityAPI } from '../../services/api';
@@ -12,7 +13,10 @@ const CATEGORIES = [
   'Arts & Crafts', 'Cooking', 'Fitness', 'Academic', 'General',
 ];
 
-export default function CommunityPage() {
+function CommunityPageInner() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
   const [posts,       setPosts]       = useState([]);
   const [loading,     setLoading]     = useState(true);
   const [category,    setCategory]    = useState('All');
@@ -21,6 +25,13 @@ export default function CommunityPage() {
   const [totalPages,  setTotalPages]  = useState(1);
   const [newPostOpen, setNewPostOpen] = useState(false);
   const [activePost,  setActivePost]  = useState(null);
+
+  // Deep-link support — e.g. a notification linking straight to the post
+  // that was replied to, via /community?post=<id>
+  useEffect(() => {
+    const postId = searchParams.get('post');
+    if (postId) setActivePost(postId);
+  }, [searchParams]);
 
   const loadPosts = useCallback(async (cat, q, pg) => {
     setLoading(true);
@@ -41,10 +52,32 @@ export default function CommunityPage() {
 
   useEffect(() => { loadPosts(category, search, page); }, [category, page, loadPosts]);
 
+  // Live search — fires automatically ~400ms after the user stops typing,
+  // so there's no need to press Enter or click the Search button. Same as
+  // a manual search, it resets to "All" categories so results aren't
+  // silently hidden by whatever category tab happens to be active.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setPage(1);
+      if (search.trim()) {
+        setCategory('All');
+        loadPosts('All', search, 1);
+      } else {
+        loadPosts(category, '', 1);
+      }
+    }, 400);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search]);
+
   const handleSearch = (e) => {
     e.preventDefault();
     setPage(1);
-    loadPosts(category, search, 1);
+    // A search should look across everything by default — otherwise it
+    // silently combines with whatever category tab happens to be active,
+    // which hides matching posts filed under a different category.
+    setCategory('All');
+    loadPosts('All', search, 1);
   };
 
   const handleCategoryChange = (cat) => {
@@ -59,6 +92,10 @@ export default function CommunityPage() {
 
   const handleDeleted = (id) => {
     setPosts(prev => prev.filter(p => p._id !== id));
+  };
+
+  const handlePostViewed = (id, views) => {
+    setPosts(prev => prev.map(p => p._id === id ? { ...p, views } : p));
   };
 
   return (
@@ -178,9 +215,21 @@ export default function CommunityPage() {
 
       <PostDetailModal
         open={!!activePost}
-        onClose={() => setActivePost(null)}
+        onClose={() => {
+          setActivePost(null);
+          if (searchParams.get('post')) router.replace('/community');
+        }}
         postId={activePost}
+        onViewed={handlePostViewed}
       />
     </div>
+  );
+}
+
+export default function CommunityPage() {
+  return (
+    <Suspense fallback={null}>
+      <CommunityPageInner />
+    </Suspense>
   );
 }

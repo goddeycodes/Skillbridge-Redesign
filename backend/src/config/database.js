@@ -61,6 +61,10 @@ const connectPostgres = async () => {
   try {
     await sequelize.authenticate();
     await sequelize.sync({ alter: process.env.NODE_ENV === 'development' });
+    // Safety net when sync alter did not run (e.g. NODE_ENV !== development)
+    await sequelize.query(
+      'ALTER TABLE "Users" ADD COLUMN IF NOT EXISTS "isAdmin" BOOLEAN NOT NULL DEFAULT false;'
+    );
     POSTGRES_AVAILABLE = true;
     console.log('PostgreSQL connected.');
   } catch (err) {

@@ -1,6 +1,7 @@
 'use client';
-import { useState, useEffect, useCallback } from 'react';
-import { Sparkles, AlertCircle, RefreshCw, BookOpen, GraduationCap } from 'lucide-react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { Sparkles, AlertCircle, RefreshCw, BookOpen, GraduationCap, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { matchAPI } from '../../services/api';
 import MatchCard from '../../components/matching/MatchCard';
@@ -20,19 +21,19 @@ function SkeletonCard() {
       </div>
       <div className="bg-slate-50 rounded-xl p-3.5 space-y-2.5">
         <div className="h-3 w-40 bg-slate-100 rounded" />
-        <div className="h-3 w-6  bg-slate-100 rounded mx-auto" />
+        <div className="h-3 w-6 bg-slate-100 rounded mx-auto" />
         <div className="h-3 w-36 bg-slate-100 rounded" />
-      </div>
-      <div className="flex gap-1.5">
-        <div className="h-5 w-16 bg-slate-100 rounded-full" />
-        <div className="h-5 w-20 bg-slate-100 rounded-full" />
       </div>
       <div className="h-9 bg-slate-100 rounded-xl" />
     </div>
   );
 }
 
-export default function MatchingPage() {
+function MatchingPageInner() {
+  const searchParams = useSearchParams();
+  const forSkillId   = searchParams.get('forSkillId');
+  const forSkillName = searchParams.get('forSkillName');
+
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState(null);
@@ -41,7 +42,11 @@ export default function MatchingPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await matchAPI.getMatches();
+      const params = {};
+      if (forSkillId)   params.forSkillId   = forSkillId;
+      if (forSkillName) params.forSkillName = forSkillName;
+
+      const res = await matchAPI.getMatches(params);
       setMatches(res.data.matches || []);
     } catch (err) {
       setError({
@@ -51,20 +56,39 @@ export default function MatchingPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [forSkillId, forSkillName]);
 
   useEffect(() => { loadMatches(); }, [loadMatches]);
+
+  const isSkillSearch = !!(forSkillId || forSkillName);
 
   return (
     <div className="space-y-6">
 
+      {isSkillSearch && (
+        <div className="rounded-2xl border border-brand-100 bg-brand-50 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wide text-brand-600">Searching for</p>
+            <p className="text-sm font-extrabold text-slate-800">
+              Teachers for &ldquo;{forSkillName || 'this skill'}&rdquo;
+            </p>
+          </div>
+          <Link href="/matching" className="inline-flex items-center gap-1 text-xs font-bold text-brand-700 hover:text-brand-800">
+            <ArrowLeft size={13} /> View all matches
+          </Link>
+        </div>
+      )}
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-            <Sparkles size={22} className="text-brand-500" /> Skill Exchange Matches
+            <Sparkles size={22} className="text-brand-500" />
+            {isSkillSearch ? 'Skill Matches' : 'Skill Exchange Matches'}
           </h1>
           <p className="text-slate-500 mt-1 text-sm">
-            Find people whose learning goals complement what you can teach — and whose skills can help you grow.
+            {isSkillSearch
+              ? `Partners who can teach you ${forSkillName || 'this skill'} while learning something you teach in return.`
+              : 'SkillBridge matches people for mutual exchange — you teach something they want, they teach something you want.'}
           </p>
         </div>
         {!loading && !error && (
@@ -77,10 +101,22 @@ export default function MatchingPage() {
         )}
       </div>
 
+      {!isSkillSearch && (
+        <div className="rounded-2xl border border-slate-100 bg-white p-4 text-sm text-slate-600 leading-relaxed">
+          <p className="font-semibold text-slate-800 mb-1">How matching works</p>
+          <p>
+            You need at least one skill you <strong>teach</strong> and one you want to <strong>learn</strong> on your profile.
+            We find people where <em>you teach what they want</em> and <em>they teach what you want</em> — a fair two-way exchange, not one-sided tutoring.
+          </p>
+        </div>
+      )}
+
       {loading && (
         <>
           <p className="text-sm text-slate-400 animate-pulse">
-            Scanning the community for your best matches…
+            {isSkillSearch
+              ? `Finding teachers for ${forSkillName || 'this skill'}…`
+              : 'Scanning the community for your best matches…'}
           </p>
           <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
             {[1, 2, 3].map(i => <SkeletonCard key={i} />)}
@@ -126,28 +162,54 @@ export default function MatchingPage() {
       {!loading && !error && matches.length === 0 && (
         <div className="sb-card p-10 flex flex-col items-center text-center text-slate-400">
           <Sparkles size={32} className="mb-3 text-slate-200" />
-          <p className="font-medium text-slate-600">No matches yet</p>
-          <p className="text-sm mt-1 max-w-sm">
-            We couldn't find anyone whose skills complement yours right now.
-            Add more skills to widen your reach.
+          <p className="font-medium text-slate-600">
+            {isSkillSearch ? `No teachers found for "${forSkillName}"` : 'No matches yet'}
           </p>
-          <Link href="/profile"
-            className="mt-4 px-4 py-2 text-sm font-semibold text-brand-600 bg-brand-50 rounded-lg hover:bg-brand-100 transition-colors">
-            Add more skills
-          </Link>
+          <p className="text-sm mt-1 max-w-sm">
+            {isSkillSearch
+              ? 'Try browsing other skills or add this skill to your learning goals on your profile.'
+              : "We couldn't find anyone whose skills complement yours right now. Add more skills to widen your reach."}
+          </p>
+          <div className="mt-4 flex gap-2">
+            {isSkillSearch && (
+              <Link href="/learn"
+                className="px-4 py-2 text-sm font-semibold text-brand-600 bg-brand-50 rounded-lg hover:bg-brand-100 transition-colors">
+                Browse skills
+              </Link>
+            )}
+            <Link href="/profile"
+              className="px-4 py-2 text-sm font-semibold text-brand-600 bg-brand-50 rounded-lg hover:bg-brand-100 transition-colors">
+              Add more skills
+            </Link>
+          </div>
         </div>
       )}
 
       {!loading && !error && matches.length > 0 && (
         <>
           <p className="text-sm text-slate-400">
-            {matches.length} learning partner{matches.length !== 1 ? 'es' : ''} found
+            {matches.length} teacher{matches.length !== 1 ? 's' : ''} found
+            {isSkillSearch && forSkillName ? ` for ${forSkillName}` : ''}
           </p>
           <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
-            {matches.map(m => <MatchCard key={m.candidateId} match={m} />)}
+            {matches.map(m => (
+              <MatchCard
+                key={`${m.candidateId}-${m.theyTeachId}`}
+                match={m}
+                highlightLearn={forSkillName || undefined}
+              />
+            ))}
           </div>
         </>
       )}
     </div>
+  );
+}
+
+export default function MatchingPage() {
+  return (
+    <Suspense fallback={<div className="p-10 text-center text-sm text-slate-400">Loading matches…</div>}>
+      <MatchingPageInner />
+    </Suspense>
   );
 }

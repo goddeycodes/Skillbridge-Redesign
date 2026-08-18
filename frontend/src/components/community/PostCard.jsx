@@ -108,7 +108,7 @@ export default function PostCard({ post, onClick, onDeleted }) {
           {upvotes}
         </button>
         <span className="flex items-center gap-1">
-          <MessageCircle size={13} /> {post.replies?.length ?? 0}
+          <MessageCircle size={13} /> {post.replyCount ?? 0}
         </span>
         <span className="flex items-center gap-1">
           <Eye size={13} /> {post.views ?? 0}

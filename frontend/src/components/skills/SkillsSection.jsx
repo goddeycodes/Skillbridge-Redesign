@@ -4,15 +4,20 @@ import { Plus, GraduationCap, BookOpen } from 'lucide-react';
 import toast from 'react-hot-toast';
 import SkillCard from './SkillCard';
 import SkillFormModal from './SkillFormModal';
+import VerificationModal from '../verification/VerificationModal';
 import { skillsAPI } from '../../services/api';
 
 export default function SkillsSection({ teachSkills, learnSkills, isOwner, onRefresh }) {
-  const [formOpen,     setFormOpen]     = useState(false);
-  const [editingSkill, setEditingSkill] = useState(null);
-  const [activeTab,    setActiveTab]    = useState('teach');
+  const [formOpen,       setFormOpen]       = useState(false);
+  const [editingSkill,   setEditingSkill]   = useState(null);
+  const [activeTab,      setActiveTab]      = useState('teach');
+  const [formDefaultType, setFormDefaultType] = useState('teach');
+  const [verifyOpen,     setVerifyOpen]     = useState(false);
+  const [verifyingSkill, setVerifyingSkill] = useState(null);
 
   const openAdd = (type) => {
     setEditingSkill(null);
+    setFormDefaultType(type);
     setActiveTab(type);
     setFormOpen(true);
   };
@@ -104,6 +109,7 @@ export default function SkillsSection({ teachSkills, learnSkills, isOwner, onRef
                 isOwner={isOwner}
                 onEdit={openEdit}
                 onDelete={handleDelete}
+                onVerify={(s) => { setVerifyingSkill(s); setVerifyOpen(true); }}
               />
             ))}
             {isOwner && shown.length < 10 && (
@@ -124,6 +130,14 @@ export default function SkillsSection({ teachSkills, learnSkills, isOwner, onRef
         onClose={() => { setFormOpen(false); setEditingSkill(null); }}
         onSaved={onRefresh}
         skill={editingSkill}
+        defaultType={formDefaultType}
+      />
+
+      <VerificationModal
+        open={verifyOpen}
+        onClose={() => { setVerifyOpen(false); setVerifyingSkill(null); }}
+        skill={verifyingSkill}
+        onVerified={onRefresh}
       />
     </div>
   );

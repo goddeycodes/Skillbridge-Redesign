@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { Loader2, Eye, EyeOff, AlertCircle, Zap } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import Logo from '../../../components/shared/Logo';
+import { getGoogleOAuthUrl } from '../../../lib/backendUrl';
 
 const schema = z.object({
   name:     z.string().min(2, 'Name must be at least 2 characters'),
@@ -73,7 +74,11 @@ export default function RegisterPage() {
       await registerUser(name, email, password);
       router.push('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Could not create account. Please try again.');
+      if (err.response) {
+        setError(err.response.data?.message || 'Could not create account. Please try again.');
+      } else {
+        setError("Can't reach the server. Check your connection and try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -81,7 +86,7 @@ export default function RegisterPage() {
 
   if (authLoading || user) return null;
 
-  const oauthUrl = `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}/api/auth/google`;
+  const oauthUrl = getGoogleOAuthUrl();
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
@@ -132,7 +137,7 @@ export default function RegisterPage() {
 
             <div>
               <label className="sb-label">Email address</label>
-              <input {...register('email')} type="email" className="sb-input" placeholder="you@example.com" autoComplete="email" />
+              <input {...register('email')} type="email" className="sb-input" placeholder="you@example.com" autoComplete="email" autoCapitalize="none" autoCorrect="off" spellCheck="false" />
               {errors.email && <p className="sb-error">{errors.email.message}</p>}
             </div>
 

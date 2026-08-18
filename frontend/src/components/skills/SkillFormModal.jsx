@@ -29,7 +29,7 @@ const LANGUAGES = [
   'Portuguese', 'Twi', 'Hausa', 'Swahili', 'Other',
 ];
 
-export default function SkillFormModal({ open, onClose, onSaved, skill = null }) {
+export default function SkillFormModal({ open, onClose, onSaved, skill = null, defaultType = 'teach' }) {
   const isEditing = !!skill;
   const [saving,   setSaving]   = useState(false);
   const [tagInput, setTagInput] = useState('');
@@ -57,12 +57,12 @@ export default function SkillFormModal({ open, onClose, onSaved, skill = null })
       setTags(skill.tags || []);
     } else {
       reset({
-        name: '', description: '', category: '', type: 'teach',
+        name: '', description: '', category: '', type: defaultType,
         proficiency: 'beginner', format: 'one-on-one', language: 'English',
       });
       setTags([]);
     }
-  }, [skill, reset, open]);
+  }, [skill, reset, open, defaultType]);
 
   const addTag = () => {
     const t = tagInput.trim().toLowerCase().replace(/\s+/g, '-');

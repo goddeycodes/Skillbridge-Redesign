@@ -1,7 +1,8 @@
 import axios from 'axios';
+import { getApiBaseUrl } from '../lib/backendUrl';
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api',
+  baseURL: getApiBaseUrl(),
   withCredentials: true,
 });
 
@@ -38,20 +39,37 @@ export const skillsAPI = {
 };
 
 export const matchAPI = {
-  getMatches: () => api.get('/matches'),
+  getMatches: (params) => api.get('/matches', { params }),
 };
 
 export const sessionsAPI = {
-  getAll:    (params) => api.get('/sessions', { params }),
-  getOne:    (id)     => api.get(`/sessions/${id}`),
-  book:      (data)   => api.post('/sessions', data),
-  complete:  (id)     => api.patch(`/sessions/${id}/complete`),
-  cancel:    (id)     => api.patch(`/sessions/${id}/cancel`),
-  rate:      (id, data) => api.post(`/sessions/${id}/rate`, data),
+  getAll:      (params) => api.get('/sessions', { params }),
+  getOne:      (id)     => api.get(`/sessions/${id}`),
+  getProgress: ()       => api.get('/sessions/progress'),
+  book:        (data)   => api.post('/sessions', data),
+  accept:      (id)     => api.patch(`/sessions/${id}/accept`),
+  decline:     (id)     => api.patch(`/sessions/${id}/decline`),
+  complete:    (id)     => api.patch(`/sessions/${id}/complete`),
+  cancel:      (id)     => api.patch(`/sessions/${id}/cancel`),
+  rate:        (id, data) => api.post(`/sessions/${id}/rate`, data),
 };
 
 export const messagesAPI = {
   getHistory: (otherUserId) => api.get(`/messages/${otherUserId}`),
+};
+
+export const notificationsAPI = {
+  getAll:         (params) => api.get('/notifications', { params }),
+  getUnreadCount: ()       => api.get('/notifications/unread-count'),
+  markAsRead:     (id)     => api.patch(`/notifications/${id}/read`),
+  markAllAsRead:  ()       => api.patch('/notifications/read-all'),
+  remove:         (id)     => api.delete(`/notifications/${id}`),
+};
+
+export const pushAPI = {
+  getPublicKey: ()           => api.get('/push/vapid-public-key'),
+  subscribe:    (data)       => api.post('/push/subscribe', { subscription: data }),
+  unsubscribe:  (endpoint)  => api.post('/push/unsubscribe', { endpoint }),
 };
 
 export const usersAPI = {

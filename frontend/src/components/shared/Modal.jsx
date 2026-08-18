@@ -2,7 +2,7 @@
 import { useEffect } from 'react';
 import { X } from 'lucide-react';
 
-export default function Modal({ open, onClose, title, children, maxWidth = 'max-w-lg' }) {
+export default function Modal({ open, onClose, title, children, footer, maxWidth = 'max-w-lg', bodyClassName = 'p-6' }) {
   useEffect(() => {
     const handler = (e) => { if (e.key === 'Escape') onClose(); };
     if (open) document.addEventListener('keydown', handler);
@@ -21,7 +21,12 @@ export default function Modal({ open, onClose, title, children, maxWidth = 'max-
             <X size={16} />
           </button>
         </div>
-        <div className="overflow-y-auto p-6">{children}</div>
+        <div className={`overflow-y-auto flex-1 min-h-0 ${bodyClassName}`}>{children}</div>
+        {footer && (
+          <div className="shrink-0 border-t border-slate-100 bg-white rounded-b-2xl">
+            {footer}
+          </div>
+        )}
       </div>
     </div>
   );

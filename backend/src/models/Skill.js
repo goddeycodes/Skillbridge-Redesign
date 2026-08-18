@@ -11,6 +11,7 @@ const skillSchema = new mongoose.Schema({
   format:      { type: String, enum: ['one-on-one', 'group', 'both'], default: 'one-on-one' },
   language:    { type: String, default: 'English' },
   isActive:    { type: Boolean, default: true },
+  isVerified:  { type: Boolean, default: false },
 }, { timestamps: true });
 
 skillSchema.index({ name: 'text', description: 'text', tags: 'text' });
