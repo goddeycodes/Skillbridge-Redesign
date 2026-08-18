@@ -97,4 +97,9 @@ export const communityAPI = {
   deletePost: (id) =>
     api.delete(`/community/posts/${id}`),
 };
+
+export const creditsAPI = {
+  getLedger: (params) => api.get('/credits', { params }),
+};
+
 export default api;

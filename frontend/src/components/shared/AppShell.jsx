@@ -5,13 +5,14 @@ import { usePathname, useRouter } from 'next/navigation';
 import {
   BookOpen, GraduationCap, Home, UsersRound, MessageCircle,
   CalendarDays, UserRound, LogOut, ChevronDown, Menu, X,
-  Compass, Target, Trophy, ShieldCheck,
+  Compass, Target, ShieldCheck, Wallet,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import Logo from './Logo';
 import NotificationsDropdown from './NotificationsDropdown';
 import { usePushNotifications } from '../../hooks/usePushNotifications';
+import Avatar from './Avatar';
 
 const groups = [
   { label: 'LEARN', items: [
@@ -32,22 +33,22 @@ const groups = [
 
 const EXACT_ONLY = ['/dashboard', '/sessions'];
 
+// Mobile bottom nav. Deliberately 6 items, not the "iOS default" 5 — Teach
+// was missing entirely on mobile before, which buried half of a platform
+// whose whole pitch is "teach what you know, learn what you need." Correct
+// coverage of the core loop matters more than hitting a round tab count.
+const mobileTabs = [
+  ['/dashboard', 'Home',    Home],
+  ['/learn',     'Learn',   BookOpen],
+  ['/teach',     'Teach',   GraduationCap],
+  ['/matching',  'Matches', UsersRound],
+  ['/messages',  'Messages',MessageCircle],
+  ['/profile',   'Profile', UserRound],
+];
+
 function isActive(pathname, href) {
   return pathname === href ||
     (!EXACT_ONLY.includes(href) && pathname.startsWith(`${href}/`));
-}
-
-function Avatar({ user }) {
-  const initials = (user?.name || 'SB')
-    .split(' ').map(x => x[0]).slice(0, 2).join('').toUpperCase();
-  return (
-    <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full bg-brand-100 ring-2 ring-white">
-      {user?.avatar
-        ? <img src={user.avatar} alt="" className="h-full w-full object-cover" />
-        : <div className="flex h-full w-full items-center justify-center text-xs font-bold text-brand-700">{initials}</div>
-      }
-    </div>
-  );
 }
 
 export default function AppShell({ children }) {
@@ -121,9 +122,12 @@ export default function AppShell({ children }) {
               className={`sidebar-link ${isActive(pathname, '/profile') ? 'sidebar-link-active' : ''}`}>
               <UserRound size={18} /><span>My Profile</span>
             </Link>
+            {/* Was "Achievements & XP" with a Trophy icon — but /credits is a
+                transaction ledger, not an achievements/XP system. Label and
+                icon now match what the page actually shows. */}
             <Link href="/credits"
               className={`sidebar-link ${isActive(pathname, '/credits') ? 'sidebar-link-active' : ''}`}>
-              <Trophy size={18} /><span>Achievements & XP</span>
+              <Wallet size={18} /><span>Credits</span>
             </Link>
             {user?.isAdmin && (
               <Link href="/admin"
@@ -137,12 +141,12 @@ export default function AppShell({ children }) {
         {/* User row */}
         <div className="border-t border-slate-100 p-4">
           <div className="flex items-center gap-3">
-            <Avatar user={user} />
+            <Avatar user={user} size={36} ring />
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold">{user?.name || 'Learner'}</p>
               <p className="truncate text-xs text-slate-400">{user?.email || ''}</p>
             </div>
-            <button onClick={signOut} title="Sign out"
+            <button onClick={signOut} title="Sign out" aria-label="Sign out"
               className="rounded-lg p-2 text-slate-400 hover:bg-red-50 hover:text-red-500">
               <LogOut size={16} />
             </button>
@@ -158,7 +162,7 @@ export default function AppShell({ children }) {
           <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
 
             {/* Mobile hamburger */}
-            <button onClick={() => setMobileOpen(true)}
+            <button onClick={() => setMobileOpen(true)} aria-label="Open menu"
               className="rounded-xl p-2 text-slate-600 hover:bg-slate-100 lg:hidden">
               <Menu size={21} />
             </button>
@@ -178,7 +182,7 @@ export default function AppShell({ children }) {
                 <span className="text-xs font-bold text-gold-700">{user?.credits ?? 0} credits</span>
               </div>
 
-              {/* ── Bell — now wired to NotificationsDropdown ── */}
+              {/* Bell — wired to the real NotificationsDropdown */}
               <NotificationsDropdown />
 
               {/* Avatar + dropdown */}
@@ -190,7 +194,7 @@ export default function AppShell({ children }) {
                   aria-expanded={profileOpen}
                   className="flex items-center gap-2 rounded-xl border border-transparent p-1.5 hover:border-slate-200 hover:bg-slate-100"
                 >
-                  <Avatar user={user} />
+                  <Avatar user={user} size={36} />
                   <ChevronDown size={14} className={`hidden text-slate-400 sm:block transition-transform ${profileOpen ? 'rotate-180' : ''}`} />
                 </button>
 
@@ -229,16 +233,10 @@ export default function AppShell({ children }) {
       {/* ── Mobile bottom nav ─────────────────────────────────────────────── */}
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-2 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
         <nav className="mx-auto flex max-w-lg items-center justify-around">
-          {[
-            ['/dashboard', 'Home',     Home        ],
-            ['/learn',     'Learn',    BookOpen    ],
-            ['/matching',  'Matches',  UsersRound  ],
-            ['/messages',  'Messages', MessageCircle],
-            ['/profile',   'Profile',  UserRound   ],
-          ].map(([href, label, Icon]) => (
+          {mobileTabs.map(([href, label, Icon]) => (
             <Link key={href} href={href}
               className={`mobile-tab ${isActive(pathname, href) ? 'mobile-tab-active' : ''}`}>
-              <Icon size={19} /><span>{label}</span>
+              <Icon size={18} /><span>{label}</span>
             </Link>
           ))}
         </nav>
@@ -252,7 +250,8 @@ export default function AppShell({ children }) {
           <aside className="relative flex h-full w-[82%] max-w-sm flex-col bg-white shadow-2xl">
             <div className="flex h-20 items-center justify-between border-b border-slate-100 px-5">
               <Logo href="/dashboard" size={24} />
-              <button onClick={() => setMobileOpen(false)} className="rounded-xl p-2 hover:bg-slate-100">
+              <button onClick={() => setMobileOpen(false)} aria-label="Close menu"
+                className="rounded-xl p-2 hover:bg-slate-100">
                 <X size={19} />
               </button>
             </div>

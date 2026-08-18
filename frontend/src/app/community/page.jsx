@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { BookOpen, Plus, Search, Loader2, RefreshCw } from 'lucide-react';
+import { BookOpen, Plus, Search, RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { communityAPI } from '../../services/api';
 import PostCard from '../../components/community/PostCard';
@@ -13,21 +13,43 @@ const CATEGORIES = [
   'Arts & Crafts', 'Cooking', 'Fitness', 'Academic', 'General',
 ];
 
+function SkeletonPostCard() {
+  return (
+    <div className="sb-card p-5 flex flex-col gap-3 animate-pulse">
+      <div className="flex items-center gap-2.5">
+        <div className="w-8 h-8 rounded-full bg-slate-100" />
+        <div className="space-y-1.5">
+          <div className="h-3 w-24 bg-slate-100 rounded" />
+          <div className="h-2.5 w-16 bg-slate-100 rounded" />
+        </div>
+      </div>
+      <div className="space-y-2">
+        <div className="h-4 w-4/5 bg-slate-100 rounded" />
+        <div className="h-3 w-full bg-slate-100 rounded" />
+        <div className="h-3 w-3/5 bg-slate-100 rounded" />
+      </div>
+      <div className="flex gap-4 pt-1">
+        <div className="h-3 w-8 bg-slate-100 rounded" />
+        <div className="h-3 w-8 bg-slate-100 rounded" />
+        <div className="h-3 w-8 bg-slate-100 rounded" />
+      </div>
+    </div>
+  );
+}
+
 function CommunityPageInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const [posts,       setPosts]       = useState([]);
-  const [loading,     setLoading]     = useState(true);
-  const [category,    setCategory]    = useState('All');
-  const [search,      setSearch]      = useState('');
-  const [page,        setPage]        = useState(1);
-  const [totalPages,  setTotalPages]  = useState(1);
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [category, setCategory] = useState('All');
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [newPostOpen, setNewPostOpen] = useState(false);
-  const [activePost,  setActivePost]  = useState(null);
+  const [activePost, setActivePost] = useState(null);
 
-  // Deep-link support — e.g. a notification linking straight to the post
-  // that was replied to, via /community?post=<id>
   useEffect(() => {
     const postId = searchParams.get('post');
     if (postId) setActivePost(postId);
@@ -52,10 +74,6 @@ function CommunityPageInner() {
 
   useEffect(() => { loadPosts(category, search, page); }, [category, page, loadPosts]);
 
-  // Live search — fires automatically ~400ms after the user stops typing,
-  // so there's no need to press Enter or click the Search button. Same as
-  // a manual search, it resets to "All" categories so results aren't
-  // silently hidden by whatever category tab happens to be active.
   useEffect(() => {
     const timer = setTimeout(() => {
       setPage(1);
@@ -73,9 +91,6 @@ function CommunityPageInner() {
   const handleSearch = (e) => {
     e.preventDefault();
     setPage(1);
-    // A search should look across everything by default — otherwise it
-    // silently combines with whatever category tab happens to be active,
-    // which hides matching posts filed under a different category.
     setCategory('All');
     loadPosts('All', search, 1);
   };
@@ -100,8 +115,6 @@ function CommunityPageInner() {
 
   return (
     <div className="space-y-6">
-
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
@@ -119,7 +132,6 @@ function CommunityPageInner() {
         </button>
       </div>
 
-      {/* Search */}
       <form onSubmit={handleSearch} className="flex gap-2">
         <div className="relative flex-1">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -135,7 +147,6 @@ function CommunityPageInner() {
         </button>
       </form>
 
-      {/* Category filter */}
       <div className="flex gap-2 flex-wrap">
         {CATEGORIES.map(cat => (
           <button
@@ -152,10 +163,9 @@ function CommunityPageInner() {
         ))}
       </div>
 
-      {/* Posts grid */}
       {loading ? (
-        <div className="flex justify-center py-16">
-          <Loader2 size={28} className="animate-spin text-brand-500" />
+        <div className="grid sm:grid-cols-2 gap-4">
+          {[1, 2, 3, 4].map(i => <SkeletonPostCard key={i} />)}
         </div>
       ) : posts.length === 0 ? (
         <div className="sb-card p-12 flex flex-col items-center text-center text-slate-400">
@@ -182,7 +192,6 @@ function CommunityPageInner() {
             ))}
           </div>
 
-          {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex justify-center gap-2">
               <button

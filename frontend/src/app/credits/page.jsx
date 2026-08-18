@@ -1,9 +1,8 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Zap, TrendingUp, TrendingDown, RefreshCw, Loader2 } from 'lucide-react';
+import { Zap, TrendingUp, TrendingDown, RefreshCw } from 'lucide-react';
 import { format } from 'date-fns';
 import { creditsAPI } from '../../services/api';
-import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
 const TYPE_CONFIG = {
@@ -27,8 +26,35 @@ function SummaryCard({ icon: Icon, label, value, color, bg }) {
   );
 }
 
+function SkeletonSummaryCard() {
+  return (
+    <div className="sb-card p-5 flex items-center gap-4 animate-pulse">
+      <div className="w-11 h-11 rounded-xl bg-slate-100 shrink-0" />
+      <div className="space-y-2 flex-1">
+        <div className="h-6 w-16 bg-slate-100 rounded" />
+        <div className="h-3 w-20 bg-slate-100 rounded" />
+      </div>
+    </div>
+  );
+}
+
+function SkeletonRow() {
+  return (
+    <li className="flex items-center gap-4 px-5 py-4 animate-pulse">
+      <div className="w-9 h-9 rounded-xl bg-slate-100 shrink-0" />
+      <div className="flex-1 space-y-2">
+        <div className="h-3.5 w-40 bg-slate-100 rounded" />
+        <div className="h-2.5 w-28 bg-slate-100 rounded" />
+      </div>
+      <div className="space-y-2 text-right">
+        <div className="h-3.5 w-10 bg-slate-100 rounded ml-auto" />
+        <div className="h-2.5 w-16 bg-slate-100 rounded ml-auto" />
+      </div>
+    </li>
+  );
+}
+
 export default function CreditsPage() {
-  const { user } = useAuth();
   const [ledger,   setLedger]   = useState(null);
   const [loading,  setLoading]  = useState(true);
   const [filter,   setFilter]   = useState('all');
@@ -52,14 +78,21 @@ export default function CreditsPage() {
           <Zap size={22} className="text-gold-500" /> Credit Ledger
         </h1>
         <p className="text-slate-500 mt-1 text-sm">
-          A transparent record of every credit you've earned and spent.
+          A transparent record of every credit you&apos;ve earned and spent.
         </p>
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-16">
-          <Loader2 size={28} className="animate-spin text-brand-500" />
-        </div>
+        <>
+          <div className="grid grid-cols-3 gap-4">
+            <SkeletonSummaryCard /><SkeletonSummaryCard /><SkeletonSummaryCard />
+          </div>
+          <div className="sb-card overflow-hidden">
+            <ul className="divide-y divide-slate-100">
+              {[1,2,3,4,5].map(i => <SkeletonRow key={i} />)}
+            </ul>
+          </div>
+        </>
       ) : (
         <>
           <div className="grid grid-cols-3 gap-4">

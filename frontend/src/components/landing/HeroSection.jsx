@@ -142,7 +142,7 @@ export default function HeroSection() {
                   <Star key={i} size={11} className="text-gold-400 fill-gold-400" />
                 ))}
               </div>
-              <p className="text-xs font-semibold text-slate-800">"Best learning experience!"</p>
+              <p className="text-xs font-semibold text-slate-800">&ldquo;Best learning experience!&rdquo;</p>
               <p className="text-[11px] text-slate-400 mt-0.5">— Kwame A., Designer</p>
             </FloatingCard>
 

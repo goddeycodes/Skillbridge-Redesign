@@ -33,14 +33,16 @@ export default function SkillCard({ skill, isOwner, onEdit, onDelete, onVerify }
         {isOwner && (
           <div className="absolute right-2 top-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
             <button
-              onClick={(e) => { e.stopPropagation(); onEdit(skill); }}
-              className="p-1.5 rounded-lg bg-white/90 text-slate-500 hover:text-slate-700 shadow-sm"
+              onClick={() => onEdit(skill)}
+              aria-label={`Edit ${skill.name}`}
+              className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
             >
               <Edit2 size={13} />
             </button>
             <button
-              onClick={(e) => { e.stopPropagation(); onDelete(skill._id); }}
-              className="p-1.5 rounded-lg bg-white/90 text-slate-500 hover:text-red-500 shadow-sm"
+              onClick={() => onDelete(skill._id)}
+              aria-label={`Delete ${skill.name}`}
+              className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors"
             >
               <Trash2 size={13} />
             </button>

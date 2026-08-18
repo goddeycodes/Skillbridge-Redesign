@@ -80,27 +80,6 @@ export default function ChatModal({ open, onClose, session }) {
     typingTimeout.current = setTimeout(() => socket.emit('stop_typing', { roomId }), 1500);
   };
 
-  const chatFooter = (
-    <div className="px-4 py-3 flex items-center gap-2">
-      <input
-        ref={inputRef}
-        value={input}
-        onChange={handleTyping}
-        onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
-        disabled={!socket}
-        placeholder={socket ? `Message ${otherUser?.name || ''}…` : 'Connecting…'}
-        className="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-60"
-      />
-      <button
-        onClick={sendMessage}
-        disabled={!input.trim() || !socket}
-        className="p-2.5 rounded-xl bg-brand-600 text-white disabled:opacity-40 hover:bg-brand-700 transition-colors"
-      >
-        <Send size={16} />
-      </button>
-    </div>
-  );
-
   return (
     <Modal
       open={open}
@@ -108,7 +87,6 @@ export default function ChatModal({ open, onClose, session }) {
       title={`Chat with ${otherUser?.name || ''}`}
       maxWidth="max-w-md"
       bodyClassName="p-0"
-      footer={chatFooter}
     >
       <div className="flex flex-col h-[55vh] min-h-[320px]">
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-3">
@@ -137,7 +115,7 @@ export default function ChatModal({ open, onClose, session }) {
             })
           )}
           {otherTyping && (
-            <div className="flex justify-start">
+            <div className="flex justify-start" aria-label={`${otherUser?.name || 'They'} is typing`}>
               <div className="bg-slate-100 rounded-2xl rounded-bl-sm px-3.5 py-2.5 flex gap-1">
                 {[0,1,2].map(i => (
                   <span key={i} className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
@@ -146,6 +124,28 @@ export default function ChatModal({ open, onClose, session }) {
             </div>
           )}
           <div ref={bottomRef} />
+        </div>
+
+        {/* Input */}
+        <div className="border-t border-slate-100 px-4 py-3 flex items-center gap-2">
+          <input
+            ref={inputRef}
+            value={input}
+            onChange={handleTyping}
+            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
+            disabled={!socket}
+            placeholder={socket ? `Message ${otherUser?.name || ''}…` : 'Connecting…'}
+            aria-label="Message"
+            className="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-60"
+          />
+          <button
+            onClick={sendMessage}
+            disabled={!input.trim() || !socket}
+            aria-label="Send message"
+            className="p-2.5 rounded-xl bg-brand-600 text-white disabled:opacity-40 hover:bg-brand-700 transition-colors"
+          >
+            <Send size={16} />
+          </button>
         </div>
       </div>
     </Modal>

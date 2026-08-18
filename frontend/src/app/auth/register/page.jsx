@@ -99,7 +99,7 @@ export default function RegisterPage() {
           </div>
           <h1 className="font-display mt-6 text-2xl font-bold text-slate-800">Create your account</h1>
           <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold-50 border border-gold-100 text-gold-700 text-xs font-medium">
-            <Zap size={11} /> You'll get 10 free credits to start
+            <Zap size={11} /> You&apos;ll get 10 free credits to start
           </div>
         </div>
 

@@ -1,7 +1,11 @@
 'use client';
 import { useState } from 'react';
-import { ArrowRightLeft, MapPin, Star, CheckCircle, Calendar, User, BookOpen, GraduationCap, ShieldAlert } from 'lucide-react';
+import {
+  ArrowRightLeft, MapPin, Star, CheckCircle, Calendar,
+  BookOpen, GraduationCap, ShieldAlert,
+} from 'lucide-react';
 import Badge from '../shared/Badge';
+import Avatar from '../shared/Avatar';
 import MatchScoreRing from './MatchScoreRing';
 import BookSessionModal from './BookSessionModal';
 
@@ -11,12 +15,11 @@ export default function MatchCard({ match, highlightLearn }) {
   const [booking, setBooking] = useState(false);
   const {
     user, matchPercent,
-    youTeach, youLearn, theyTeach, theyLearn,
+    youTeach, theyTeach,
     theyTeachCategory, theyTeachProf, theyTeachLang, theyTeachVerified,
   } = match;
 
   const canBook = theyTeachVerified !== false;
-
   const partnerInitial = user?.name?.[0] || '?';
 
   return (
@@ -25,11 +28,7 @@ export default function MatchCard({ match, highlightLearn }) {
 
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-12 h-12 rounded-xl bg-brand-100 flex items-center justify-center overflow-hidden shrink-0">
-              {user?.avatar
-                ? <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
-                : <User size={20} className="text-brand-500" />}
-            </div>
+            <Avatar user={user} size={48} bg="bg-brand-100" text="text-brand-500" />
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
                 <p className="font-semibold text-slate-800 truncate">{user?.name}</p>
@@ -55,7 +54,6 @@ export default function MatchCard({ match, highlightLearn }) {
           Mutual skill exchange
         </p>
 
-        {/* What YOU receive and give */}
         <div className="rounded-xl border border-learn-100 bg-learn-50/60 p-3 space-y-2">
           <p className="text-[10px] font-bold uppercase tracking-wide text-learn-700">Your side</p>
           <div className="flex items-start gap-2 text-sm">
@@ -84,7 +82,6 @@ export default function MatchCard({ match, highlightLearn }) {
           </div>
         </div>
 
-        {/* What THEY receive and give */}
         <div className="rounded-xl border border-brand-100 bg-brand-50/60 p-3 space-y-2">
           <p className="text-[10px] font-bold uppercase tracking-wide text-brand-700">
             {user?.name?.split(' ')[0] || 'Partner'}&apos;s side
