@@ -1,4 +1,5 @@
 const Skill = require('../models/Skill');
+const User  = require('../models/User');
 
 const SKILL_CATEGORIES = [
   'Technology', 'Design', 'Business', 'Language', 'Music',
@@ -35,7 +36,7 @@ exports.createSkill = async (req, res) => {
 // GET /api/skills?type=teach&category=Technology&q=python&language=English
 exports.getSkills = async (req, res) => {
   try {
-    const { type, category, q, language, userId } = req.query;
+    const { type, category, q, language, userId, includeTeacher } = req.query;
     const filter = { isActive: true };
     if (type)     filter.type     = type;
     if (category) filter.category = category;
@@ -43,7 +44,18 @@ exports.getSkills = async (req, res) => {
     if (userId)   filter.userId   = userId;
     if (q)        filter.$text    = { $search: q };
 
-    const skills = await Skill.find(filter).sort({ createdAt: -1 }).limit(50);
+    let skills = await Skill.find(filter).sort({ createdAt: -1 }).limit(50).lean();
+
+    if (includeTeacher === 'true' && skills.length) {
+      const userIds = [...new Set(skills.map(s => s.userId))];
+      const users = await User.findAll({
+        where: { id: userIds },
+        attributes: ['id', 'name', 'avatar', 'reputation', 'isVerified'],
+      });
+      const userMap = Object.fromEntries(users.map(u => [u.id, u.toJSON()]));
+      skills = skills.map(s => ({ ...s, teacher: userMap[s.userId] || null }));
+    }
+
     res.json({ success: true, skills });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });

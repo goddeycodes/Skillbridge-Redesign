@@ -15,12 +15,12 @@ export default function ChatModal({ open, onClose, session }) {
   const [loading,  setLoading]  = useState(true);
   const [otherTyping, setOtherTyping] = useState(false);
   const bottomRef  = useRef(null);
+  const inputRef   = useRef(null);
   const typingTimeout = useRef(null);
 
   const roomId    = session?.roomId;
   const otherUser = session?.otherUser;
 
-  // Load chat history when opened
   useEffect(() => {
     if (!open || !otherUser?.id) return;
     setLoading(true);
@@ -30,7 +30,12 @@ export default function ChatModal({ open, onClose, session }) {
       .finally(() => setLoading(false));
   }, [open, otherUser?.id]);
 
-  // Join room + listen for live events
+  useEffect(() => {
+    if (open) {
+      requestAnimationFrame(() => inputRef.current?.focus());
+    }
+  }, [open, otherUser?.id]);
+
   useEffect(() => {
     if (!socket || !open || !roomId) return;
 
@@ -54,7 +59,6 @@ export default function ChatModal({ open, onClose, session }) {
     };
   }, [socket, open, roomId, otherUser?.id]);
 
-  // Auto-scroll to bottom on new messages
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, otherTyping]);
@@ -62,10 +66,11 @@ export default function ChatModal({ open, onClose, session }) {
   const sendMessage = useCallback(() => {
     const content = input.trim();
     if (!content || !socket || !roomId) return;
-    socket.emit('send_message', { roomId, content, senderName: user.name });
+    socket.emit('send_message', { roomId, content, senderName: user.name, recipientId: otherUser?.id });
     socket.emit('stop_typing', { roomId });
     setInput('');
-  }, [input, socket, roomId, user?.name]);
+    inputRef.current?.focus();
+  }, [input, socket, roomId, user?.name, otherUser?.id]);
 
   const handleTyping = (e) => {
     setInput(e.target.value);
@@ -76,11 +81,15 @@ export default function ChatModal({ open, onClose, session }) {
   };
 
   return (
-    <Modal open={open} onClose={onClose} title={`Chat with ${otherUser?.name || ''}`} maxWidth="max-w-md">
-      <div className="flex flex-col h-[60vh] -mx-6 -mb-6">
-
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-6 py-2 space-y-3">
+    <Modal
+      open={open}
+      onClose={onClose}
+      title={`Chat with ${otherUser?.name || ''}`}
+      maxWidth="max-w-md"
+      bodyClassName="p-0"
+    >
+      <div className="flex flex-col h-[55vh] min-h-[320px]">
+        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-3">
           {loading ? (
             <div className="flex justify-center py-10"><Loader2 className="animate-spin text-brand-400" size={24} /></div>
           ) : messages.length === 0 ? (
@@ -106,7 +115,7 @@ export default function ChatModal({ open, onClose, session }) {
             })
           )}
           {otherTyping && (
-            <div className="flex justify-start">
+            <div className="flex justify-start" aria-label={`${otherUser?.name || 'They'} is typing`}>
               <div className="bg-slate-100 rounded-2xl rounded-bl-sm px-3.5 py-2.5 flex gap-1">
                 {[0,1,2].map(i => (
                   <span key={i} className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
@@ -120,16 +129,19 @@ export default function ChatModal({ open, onClose, session }) {
         {/* Input */}
         <div className="border-t border-slate-100 px-4 py-3 flex items-center gap-2">
           <input
+            ref={inputRef}
             value={input}
             onChange={handleTyping}
-            onKeyDown={e => { if (e.key === 'Enter') sendMessage(); }}
+            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
             disabled={!socket}
-            placeholder={socket ? 'Type a message…' : 'Connecting…'}
+            placeholder={socket ? `Message ${otherUser?.name || ''}…` : 'Connecting…'}
+            aria-label="Message"
             className="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-60"
           />
           <button
             onClick={sendMessage}
             disabled={!input.trim() || !socket}
+            aria-label="Send message"
             className="p-2.5 rounded-xl bg-brand-600 text-white disabled:opacity-40 hover:bg-brand-700 transition-colors"
           >
             <Send size={16} />

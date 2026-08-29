@@ -14,10 +14,79 @@ const toEngineSkill = (s) => ({
   description: s.description,
 });
 
-// GET /api/matches
+const hydrateMatches = async (rawMatches) => {
+  if (!rawMatches.length) return [];
+
+  const candidateIds = rawMatches.map(m => m.candidateId);
+  const teachSkillIds  = rawMatches.map(m => m.theyTeachId).filter(Boolean);
+
+  const [users, teachSkills] = await Promise.all([
+    User.findAll({
+      where: { id: candidateIds },
+      attributes: ['id', 'name', 'avatar', 'bio', 'reputation', 'credits', 'timezone', 'isVerified'],
+    }),
+    Skill.find({ _id: { $in: teachSkillIds } }).select('_id isVerified').lean(),
+  ]);
+
+  const userMap     = Object.fromEntries(users.map(u => [u.id, u.toJSON()]));
+  const verifiedMap = Object.fromEntries(teachSkills.map(s => [String(s._id), !!s.isVerified]));
+
+  return rawMatches
+    .filter(m => userMap[m.candidateId])
+    .map(m => ({
+      ...m,
+      user: userMap[m.candidateId],
+      matchPercent: Math.round(m.score * 100),
+      theyTeachVerified: verifiedMap[m.theyTeachId] ?? false,
+    }));
+};
+
+const callEngine = async (requesterId, requesterSkills, allSkills, timezone) => {
+  const engineRes = await axios.post(
+    `${process.env.MATCHING_ENGINE_URL || 'http://localhost:8000'}/match`,
+    {
+      requesterId,
+      requesterSkills:   requesterSkills.map(toEngineSkill),
+      allSkills:         allSkills.map(toEngineSkill),
+      requesterTimezone: timezone || 'UTC',
+    },
+    { timeout: 10000 }
+  );
+  return engineRes.data.matches || [];
+};
+
+const matchTeachesTarget = (m, targetSkill) => {
+  const targetId = String(targetSkill._id);
+  if (m.theyTeachId === targetId) return true;
+  return m.theyTeach?.toLowerCase() === targetSkill.name?.toLowerCase();
+};
+
+/** When browsing Discover Skills, run matching focused on one teach skill */
+const findMatchesForSkill = async (requesterId, mySkills, targetSkill, allSkills) => {
+  const candSkills = allSkills.filter(s => s.userId === targetSkill.userId);
+  if (!candSkills.some(s => s.type === 'learn')) return [];
+
+  const raw = await callEngine(requesterId, mySkills, candSkills, 'UTC');
+
+  return raw
+    .filter(m => m.candidateId === targetSkill.userId)
+    .map(m => ({
+      ...m,
+      theyTeach:         targetSkill.name,
+      theyTeachId:       String(targetSkill._id),
+      theyTeachCategory: targetSkill.category,
+      theyTeachProf:     targetSkill.proficiency,
+      theyTeachLang:     targetSkill.language || 'English',
+      theyTeachDesc:     targetSkill.description || '',
+      theyTeachVerified: !!targetSkill.isVerified,
+    }));
+};
+
+// GET /api/matches?forSkillId=...&forSkillName=...
 exports.getMatches = async (req, res) => {
   try {
-    // 1. Get current user's skills
+    const { forSkillId, forSkillName } = req.query;
+
     const mySkills = await Skill.find({ userId: req.user.id, isActive: true }).lean();
 
     if (!mySkills.length)
@@ -37,48 +106,50 @@ exports.getMatches = async (req, res) => {
         code: 'INCOMPLETE_SKILLS',
       });
 
-    // 2. Fetch all other active users' skills for cross-user matching
     const allSkills = await Skill.find({
       userId: { $ne: req.user.id },
       isActive: true,
     }).lean();
 
-    // 3. Call matching engine
-    const engineRes = await axios.post(
-      `${process.env.MATCHING_ENGINE_URL || 'http://localhost:8000'}/match`,
-      {
-        requesterId:       req.user.id,
-        requesterSkills:   mySkills.map(toEngineSkill),
-        allSkills:         allSkills.map(toEngineSkill),
-        requesterTimezone: req.user.timezone || 'UTC',
-      },
-      { timeout: 10000 }
+    let targetSkill = null;
+    if (forSkillId) {
+      targetSkill = await Skill.findOne({ _id: forSkillId, type: 'teach', isActive: true }).lean();
+    }
+
+    let rawMatches = await callEngine(
+      req.user.id,
+      mySkills,
+      allSkills,
+      req.user.timezone
     );
 
-    const rawMatches = engineRes.data.matches || [];
+    if (targetSkill) {
+      let filtered = rawMatches.filter(m => matchTeachesTarget(m, targetSkill));
 
-    if (!rawMatches.length)
-      return res.json({ success: true, matches: [], total: 0 });
+      if (!filtered.length) {
+        filtered = await findMatchesForSkill(req.user.id, mySkills, targetSkill, allSkills);
+      }
 
-    // 4. Hydrate candidate profiles from PostgreSQL
-    const candidateIds = rawMatches.map(m => m.candidateId);
-    const users = await User.findAll({
-      where: { id: candidateIds },
-      attributes: ['id', 'name', 'avatar', 'bio', 'reputation', 'credits', 'timezone', 'isVerified'],
+      rawMatches = filtered;
+    } else if (forSkillName) {
+      const nameLower = forSkillName.toLowerCase();
+      rawMatches = rawMatches.filter(m =>
+        m.theyTeach?.toLowerCase().includes(nameLower)
+      );
+    }
+
+    const matches = await hydrateMatches(rawMatches);
+
+    res.json({
+      success: true,
+      matches,
+      total: matches.length,
+      searchContext: targetSkill
+        ? { forSkillId: String(targetSkill._id), forSkillName: targetSkill.name }
+        : forSkillName
+          ? { forSkillName }
+          : null,
     });
-
-    const userMap = Object.fromEntries(users.map(u => [u.id, u.toJSON()]));
-
-    // 5. Merge engine scores with user profiles
-    const matches = rawMatches
-      .filter(m => userMap[m.candidateId])
-      .map(m => ({
-        ...m,
-        user: userMap[m.candidateId],
-        matchPercent: Math.round(m.score * 100),
-      }));
-
-    res.json({ success: true, matches, total: matches.length });
   } catch (err) {
     if (err.code === 'ECONNREFUSED' || err.code === 'ECONNABORTED') {
       return res.status(503).json({

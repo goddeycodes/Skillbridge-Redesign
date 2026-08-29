@@ -46,7 +46,7 @@ export default function BookSessionModal({ open, onClose, match }) {
         notes:       data.notes || undefined,
       });
       await refreshUser();
-      toast.success('Session booked! Check your Sessions tab.');
+      toast.success('Request sent! The teacher needs to accept before it\'s confirmed.');
       reset();
       onClose();
     } catch (err) {
@@ -57,7 +57,7 @@ export default function BookSessionModal({ open, onClose, match }) {
   };
 
   return (
-    <Modal open={open} onClose={onClose} title="Book a session">
+    <Modal open={open} onClose={onClose} title="Request a session">
       <div className="mb-4 p-3 rounded-xl bg-brand-50 border border-brand-100 text-sm">
         <p className="text-slate-700">
           Learning <span className="font-semibold">{match?.theyTeach}</span> from{' '}
@@ -67,7 +67,7 @@ export default function BookSessionModal({ open, onClose, match }) {
 
       {insufficientCredits && (
         <div className="mb-4 p-3 rounded-xl bg-gold-50 border border-gold-100 text-sm text-gold-700 flex items-center gap-2">
-          <Zap size={14} /> You need at least 1 credit to book a session.
+          <Zap size={14} /> You need at least 1 credit to send a session request.
         </div>
       )}
 
@@ -106,13 +106,13 @@ export default function BookSessionModal({ open, onClose, match }) {
 
         <div className="flex items-center justify-between pt-2">
           <p className="text-xs text-slate-400 flex items-center gap-1">
-            <Zap size={12} className="text-gold-500" /> Costs 1 credit
+            <Zap size={12} className="text-gold-500" /> Reserves 1 credit until the teacher responds
           </p>
           <div className="flex gap-2">
             <button type="button" onClick={onClose} className="sb-btn-ghost">Cancel</button>
             <button type="submit" disabled={saving || insufficientCredits} className="sb-btn-primary flex items-center gap-2">
               {saving ? <Loader2 size={14} className="animate-spin" /> : <Calendar size={14} />}
-              Confirm booking
+              Send request
             </button>
           </div>
         </div>

@@ -5,7 +5,10 @@ const bcrypt = require('bcryptjs');
 const User = sequelize.define('User', {
   id:         { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
   name:       { type: DataTypes.STRING, allowNull: false },
-  email:      { type: DataTypes.STRING, allowNull: false, unique: true, validate: { isEmail: true } },
+  email:      {
+    type: DataTypes.STRING, allowNull: false, unique: true, validate: { isEmail: true },
+    set(value) { this.setDataValue('email', value?.trim().toLowerCase()); },
+  },
   password:   { type: DataTypes.STRING },
   avatar:     { type: DataTypes.STRING },
   bio:        { type: DataTypes.TEXT },
@@ -14,6 +17,7 @@ const User = sequelize.define('User', {
   reputation: { type: DataTypes.FLOAT, defaultValue: 0 },
   googleId:   { type: DataTypes.STRING },
   isVerified: { type: DataTypes.BOOLEAN, defaultValue: false },
+  isAdmin:    { type: DataTypes.BOOLEAN, defaultValue: false },
   isActive:   { type: DataTypes.BOOLEAN, defaultValue: true },
 }, {
   timestamps: true,

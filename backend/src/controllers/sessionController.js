@@ -1,9 +1,13 @@
 const Session  = require('../models/Session');
 const User     = require('../models/User');
+const Skill    = require('../models/Skill');
 const Rating   = require('../models/Rating');
+const SkillVerification = require('../models/SkillVerification');
 const CreditTransaction = require('../models/CreditTransaction');
 const { sequelize } = require('../config/database');
 const { Op } = require('sequelize');
+const { roomIdFor } = require('../utils/roomId');
+const notify = require('../services/notificationService');
 
 const USER_ATTRS = ['id', 'name', 'avatar', 'reputation', 'timezone', 'isVerified'];
 
@@ -30,7 +34,7 @@ const hydrateSessions = async (sessions, viewerId) => {
       role: isTeacher ? 'teacher' : 'learner',
       otherUser: userMap[isTeacher ? json.learnerId : json.teacherId] || null,
       canRate: json.status === 'completed' && !ratedSessionIds.has(json.id),
-      roomId: [json.teacherId, json.learnerId].sort().join('-'),
+      roomId: roomIdFor(json.teacherId, json.learnerId),
     };
   });
 };
@@ -60,8 +64,20 @@ exports.bookSession = async (req, res) => {
     if (learner.credits < 1)
       return res.status(400).json({ success: false, message: 'Insufficient credits. You need at least 1 credit to book a session.' });
 
+    const skill = await Skill.findById(skillId);
+    if (!skill || !skill.isActive)
+      return res.status(404).json({ success: false, message: 'Skill not found.' });
+    if (skill.userId !== teacherId)
+      return res.status(400).json({ success: false, message: 'Skill does not belong to this teacher.' });
+    if (!skill.isVerified)
+      return res.status(400).json({
+        success: false,
+        message: 'This skill has not been verified yet. The teacher must complete verification before sessions can be booked.',
+        code: 'SKILL_NOT_VERIFIED',
+      });
+
     const session = await Session.create(
-      { teacherId, learnerId, skillId, title, scheduledAt, duration: duration || 60, meetingLink, notes, status: 'confirmed' },
+      { teacherId, learnerId, skillId, title, scheduledAt, duration: duration || 60, meetingLink, notes, status: 'pending' },
       { transaction: t }
     );
 
@@ -72,6 +88,9 @@ exports.bookSession = async (req, res) => {
     );
 
     await t.commit();
+
+    await notify.sessionRequested(teacherId, learner.name, title, session.id);
+
     const [hydrated] = await hydrateSessions([session], learnerId);
     res.status(201).json({ success: true, session: hydrated });
   } catch (err) {
@@ -83,12 +102,17 @@ exports.bookSession = async (req, res) => {
 // GET /api/sessions?status=upcoming|completed|cancelled
 exports.getSessions = async (req, res) => {
   try {
-    const { status } = req.query;
-    const where = { [Op.or]: [{ teacherId: req.user.id }, { learnerId: req.user.id }] };
+    const { status, role } = req.query;
+    const where = {};
+
+    if (role === 'teacher')      where.teacherId = req.user.id;
+    else if (role === 'learner') where.learnerId = req.user.id;
+    else where[Op.or] = [{ teacherId: req.user.id }, { learnerId: req.user.id }];
 
     if (status === 'upcoming')  where.status = { [Op.in]: ['pending', 'confirmed'] };
-    if (status === 'completed') where.status = 'completed';
-    if (status === 'cancelled') where.status = 'cancelled';
+  if (status === 'completed') where.status = 'completed';
+  if (status === 'cancelled') where.status = 'cancelled';
+  // status === 'all' or undefined: no filter, return everything
 
     const sessions = await Session.findAll({ where, order: [['scheduledAt', 'ASC']] });
     const hydrated = await hydrateSessions(sessions, req.user.id);
@@ -126,6 +150,8 @@ exports.completeSession = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Session already marked complete.' });
     if (session.status === 'cancelled')
       return res.status(400).json({ success: false, message: 'Cannot complete a cancelled session.' });
+    if (session.status !== 'confirmed')
+      return res.status(400).json({ success: false, message: 'Only confirmed sessions can be marked complete.' });
 
     session.status = 'completed';
     await session.save({ transaction: t });
@@ -138,6 +164,95 @@ exports.completeSession = async (req, res) => {
     );
 
     await t.commit();
+
+    const otherId = req.user.id === session.teacherId ? session.learnerId : session.teacherId;
+
+    await notify.sessionCompleted(otherId, req.user.name);
+    await notify.creditEarned(
+      session.teacherId,
+      1,
+      `You earned 1 credit for teaching "${session.title}".`
+    );
+
+    // Learner auto-endorses the teacher's skill after a completed session
+    try {
+      const learner = await User.findByPk(session.learnerId, { attributes: ['id', 'name'] });
+      const verification = await SkillVerification.findOne({
+        skillId: session.skillId,
+        userId:  session.teacherId,
+      });
+      if (verification && learner) {
+        const already = verification.endorsements.some(e => e.sessionId === session.id);
+        if (!already) {
+          verification.endorsements.push({
+            endorserId:   learner.id,
+            endorserName: learner.name,
+            sessionId:    session.id,
+          });
+          verification.stepsCompleted.endorsement = verification.endorsements.length >= 1;
+          await verification.save();
+          await notify.skillEndorsed(session.teacherId, learner.name, verification.skillName);
+        }
+      }
+    } catch (endorseErr) {
+      console.warn('Auto-endorse failed:', endorseErr.message);
+    }
+
+    const [hydrated] = await hydrateSessions([session], req.user.id);
+    res.json({ success: true, session: hydrated });
+  } catch (err) {
+    await t.rollback();
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// PATCH /api/sessions/:id/accept
+exports.acceptSession = async (req, res) => {
+  try {
+    const session = await Session.findByPk(req.params.id);
+    if (!session) return res.status(404).json({ success: false, message: 'Session not found.' });
+    if (session.teacherId !== req.user.id)
+      return res.status(403).json({ success: false, message: 'Only the teacher can accept a session request.' });
+    if (session.status !== 'pending')
+      return res.status(400).json({ success: false, message: 'Only pending requests can be accepted.' });
+
+    session.status = 'confirmed';
+    await session.save();
+
+    await notify.sessionAccepted(session.learnerId, req.user.name, session.title, session.id);
+
+    const [hydrated] = await hydrateSessions([session], req.user.id);
+    res.json({ success: true, session: hydrated });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// PATCH /api/sessions/:id/decline
+exports.declineSession = async (req, res) => {
+  const t = await sequelize.transaction();
+  try {
+    const session = await Session.findByPk(req.params.id, { transaction: t });
+    if (!session) return res.status(404).json({ success: false, message: 'Session not found.' });
+    if (session.teacherId !== req.user.id)
+      return res.status(403).json({ success: false, message: 'Only the teacher can decline a session request.' });
+    if (session.status !== 'pending')
+      return res.status(400).json({ success: false, message: 'Only pending requests can be declined.' });
+
+    session.status = 'cancelled';
+    await session.save({ transaction: t });
+
+    const learner = await User.findByPk(session.learnerId, { transaction: t });
+    await learner.increment('credits', { by: 1, transaction: t });
+    await CreditTransaction.create(
+      { userId: session.learnerId, amount: 1, type: 'refund', reason: `Declined: ${session.title}`, sessionId: session.id },
+      { transaction: t }
+    );
+
+    await t.commit();
+
+    await notify.sessionDeclined(session.learnerId, req.user.name, session.title);
+
     const [hydrated] = await hydrateSessions([session], req.user.id);
     res.json({ success: true, session: hydrated });
   } catch (err) {
@@ -159,10 +274,12 @@ exports.cancelSession = async (req, res) => {
     if (session.status === 'cancelled')
       return res.status(400).json({ success: false, message: 'Session already cancelled.' });
 
+    const wasPending = session.status === 'pending';
+    const isLearner  = req.user.id === session.learnerId;
+
     session.status = 'cancelled';
     await session.save({ transaction: t });
 
-    // Refund the learner's credit since the session never happened
     const learner = await User.findByPk(session.learnerId, { transaction: t });
     await learner.increment('credits', { by: 1, transaction: t });
     await CreditTransaction.create(
@@ -171,6 +288,29 @@ exports.cancelSession = async (req, res) => {
     );
 
     await t.commit();
+
+    if (wasPending && isLearner) {
+      await notify.create({
+        userId: session.teacherId,
+        type:   'session_cancelled',
+        title:  'Session request withdrawn',
+        body:   `${req.user.name} withdrew their request for "${session.title}".`,
+        link:   '/sessions/teaching',
+      });
+    } else if (wasPending) {
+      await notify.sessionDeclined(session.learnerId, req.user.name, session.title);
+    } else if (isLearner) {
+      await notify.create({
+        userId: session.teacherId,
+        type:   'session_cancelled',
+        title:  'Session cancelled',
+        body:   `${req.user.name} cancelled "${session.title}".`,
+        link:   '/sessions/teaching',
+      });
+    } else {
+      await notify.sessionCancelled(session.learnerId, req.user.name, session.title);
+    }
+
     const [hydrated] = await hydrateSessions([session], req.user.id);
     res.json({ success: true, session: hydrated });
   } catch (err) {
@@ -204,6 +344,8 @@ exports.rateSession = async (req, res) => {
     const allRatings = await Rating.findAll({ where: { ratedId }, attributes: ['score'] });
     const avg = allRatings.reduce((s, r) => s + r.score, 0) / allRatings.length;
     await User.update({ reputation: Math.round(avg * 10) / 10 }, { where: { id: ratedId } });
+
+    await notify.ratingReceived(ratedId, req.user.name, score);
 
     res.status(201).json({ success: true, rating });
   } catch (err) {

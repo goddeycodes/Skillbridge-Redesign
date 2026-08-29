@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { Loader2, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import Logo from '../../../components/shared/Logo';
+import { getGoogleOAuthUrl } from '../../../lib/backendUrl';
 
 const schema = z.object({
   email:    z.string().email('Enter a valid email address'),
@@ -15,6 +16,14 @@ const schema = z.object({
 });
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-sm text-slate-400">Loading…</div>}>
+      <LoginPageInner />
+    </Suspense>
+  );
+}
+
+function LoginPageInner() {
   const { user, loading: authLoading, login } = useAuth();
   const router       = useRouter();
   const searchParams = useSearchParams();
@@ -41,7 +50,13 @@ export default function LoginPage() {
       const redirect = searchParams.get('redirect') || '/dashboard';
       router.push(redirect);
     } catch (err) {
-      setError(err.response?.data?.message || 'Invalid email or password.');
+      if (err.response) {
+        // The server responded — this is a real auth rejection (bad credentials, deactivated account, etc.)
+        setError(err.response.data?.message || 'Invalid email or password.');
+      } else {
+        // The request never reached the server at all — wrong API URL, backend down, or a network/firewall block
+        setError("Can't reach the server. Check your connection and try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -49,7 +64,7 @@ export default function LoginPage() {
 
   if (authLoading || user) return null;
 
-  const oauthUrl = `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}/api/auth/google`;
+  const oauthUrl = getGoogleOAuthUrl();
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
@@ -100,7 +115,7 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
               <label className="sb-label">Email address</label>
-              <input {...register('email')} type="email" className="sb-input" placeholder="you@example.com" autoComplete="email" />
+              <input {...register('email')} type="email" className="sb-input" placeholder="you@example.com" autoComplete="email" autoCapitalize="none" autoCorrect="off" spellCheck="false" />
               {errors.email && <p className="sb-error">{errors.email.message}</p>}
             </div>
 
@@ -124,7 +139,7 @@ export default function LoginPage() {
           </form>
 
           <p className="mt-6 text-center text-sm text-slate-500">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <Link href="/auth/register" className="font-semibold text-brand-600 hover:text-brand-700">
               Sign up free
             </Link>

@@ -1,6 +1,8 @@
+import { getGoogleOAuthUrl } from '../../lib/backendUrl';
+
 export default function GoogleButton({ label = 'Continue with Google', disabled }) {
   const handleGoogleLogin = () => {
-    window.location.href = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/auth/google`;
+    window.location.href = getGoogleOAuthUrl();
   };
 
   return (

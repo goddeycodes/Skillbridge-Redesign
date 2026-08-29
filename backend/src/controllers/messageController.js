@@ -1,14 +1,13 @@
 const Message = require('../models/Message');
-
-/** Build a deterministic room ID from two user IDs */
-const roomIdFor = (a, b) => [a, b].sort().join('-');
+const { roomIdFor, roomIdVariants } = require('../utils/roomId');
 
 // GET /api/messages/:otherUserId
 const getHistory = async (req, res) => {
   try {
+    const ids = roomIdVariants(req.user.id, req.params.otherUserId);
     const roomId = roomIdFor(req.user.id, req.params.otherUserId);
 
-    const messages = await Message.find({ roomId })
+    const messages = await Message.find({ roomId: { $in: ids } })
       .sort({ createdAt: 1 })
       .limit(200);
 

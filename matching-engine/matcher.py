@@ -65,8 +65,8 @@ def _proficiency_score(teacher_prof: str, learner_prof: str) -> float:
 
     diff = t_idx - l_idx   # positive = teacher is ahead
 
-    if diff == 2:   return 1.0    # ideal gap
-    if diff == 1:   return 0.9
+    if diff >= 2:  return 1.0    # teacher well ahead — ideal for learning
+    if diff == 1:  return 0.9
     if diff == 0:   return 0.7    # peers — still useful
     if diff == -1:  return 0.3    # learner slightly ahead
     if diff <= -2:  return 0.0    # learner more advanced than teacher
@@ -81,21 +81,28 @@ def compute_match_score(
     vectorizer: TfidfVectorizer,
     tfidf_matrix,
     req_teach_idx: int,
+    req_learn_idx: int,
     cand_teach_idx: int,
+    cand_learn_idx: int,
 ) -> float:
     """
     Compute a single pairwise match score between one requester
     teach/learn pair and one candidate teach/learn pair.
     """
-    # ── 1. TF-IDF cosine similarity ──────────────────────────────────────────
-    # Does what the requester teaches match what the candidate wants to learn?
-    # Does what the candidate teaches match what the requester wants to learn?
-    sim_a = float(cosine_similarity(
+    # ── 1. TF-IDF cosine similarity (both directions of the exchange) ───────────
+    # Does what YOU teach match what THEY want to learn?
+    sim_you_to_them = float(cosine_similarity(
         tfidf_matrix[req_teach_idx],
-        tfidf_matrix[cand_teach_idx]
-    )[0][0])
+        tfidf_matrix[cand_learn_idx]
+    )[0][0]) if cand_learn_idx >= 0 else 0.0
 
-    sim = sim_a   # single direction is sufficient for ranking
+    # Does what THEY teach match what YOU want to learn?
+    sim_them_to_you = float(cosine_similarity(
+        tfidf_matrix[cand_teach_idx],
+        tfidf_matrix[req_learn_idx]
+    )[0][0]) if req_learn_idx >= 0 else 0.0
+
+    sim = (sim_you_to_them + sim_them_to_you) / 2
 
     # ── 2. Category match bonus ───────────────────────────────────────────────
     cat_score = 1.0 if (
@@ -175,14 +182,14 @@ def find_best_matches(
     if not valid_candidates:
         return []
 
-    # Build TF-IDF corpus — all teach skills (requester + candidates)
-    all_teach_skills = req_teach + [
+    # Build TF-IDF corpus — all teach AND learn skills (both sides of exchange)
+    all_skills_list = req_teach + req_learn + [
         s
         for skills in valid_candidates.values()
-        for s in skills["teach"]
+        for s in skills["teach"] + skills["learn"]
     ]
 
-    corpus = [_skill_to_text(s) for s in all_teach_skills]
+    corpus = [_skill_to_text(s) for s in all_skills_list]
 
     try:
         vectorizer   = TfidfVectorizer(stop_words="english", min_df=1)
@@ -192,7 +199,7 @@ def find_best_matches(
         return []
 
     # Index map: skill _id → row in tfidf_matrix
-    skill_index = {_skill_id(s): i for i, s in enumerate(all_teach_skills)}
+    skill_index = {_skill_id(s): i for i, s in enumerate(all_skills_list)}
 
     results = []
 
@@ -209,9 +216,11 @@ def find_best_matches(
             cand_skills["teach"], req_learn
         ):
             req_teach_idx  = skill_index.get(_skill_id(rt), -1)
+            req_learn_idx  = skill_index.get(_skill_id(rl), -1)
             cand_teach_idx = skill_index.get(_skill_id(ct), -1)
+            cand_learn_idx = skill_index.get(_skill_id(cl), -1)
 
-            if req_teach_idx < 0 or cand_teach_idx < 0:
+            if req_teach_idx < 0 or cand_teach_idx < 0 or req_learn_idx < 0 or cand_learn_idx < 0:
                 continue
 
             score = compute_match_score(
@@ -222,7 +231,9 @@ def find_best_matches(
                 vectorizer=vectorizer,
                 tfidf_matrix=tfidf_matrix,
                 req_teach_idx=req_teach_idx,
+                req_learn_idx=req_learn_idx,
                 cand_teach_idx=cand_teach_idx,
+                cand_learn_idx=cand_learn_idx,
             )
 
             if score > best_score:

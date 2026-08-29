@@ -11,6 +11,7 @@ const sanitizeUser = (user) => ({
   reputation: user.reputation,
   timezone:   user.timezone,
   isVerified: user.isVerified,
+  isAdmin:    user.isAdmin,
 });
 
 // POST /api/auth/register
@@ -18,7 +19,8 @@ const { isPostgresAvailable } = require('../config/database');
 
 exports.register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, password } = req.body;
+    const email = req.body.email?.trim().toLowerCase();
 
     if (!isPostgresAvailable()) {
       return res.status(503).json({ success: false, message: 'Database is unavailable. Try again later.' });
@@ -39,7 +41,8 @@ exports.register = async (req, res) => {
 // POST /api/auth/login
 exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { password } = req.body;
+    const email = req.body.email?.trim().toLowerCase();
     const user = await User.findOne({ where: { email } });
 
     if (!user || !user.password)
@@ -67,7 +70,7 @@ exports.getMe = async (req, res) => {
 exports.googleCallback = async (req, res) => {
   try {
     const profile  = req.user; // populated by passport-google-oauth20
-    const email    = profile.emails?.[0]?.value;
+    const email    = profile.emails?.[0]?.value?.trim().toLowerCase();
     const name     = profile.displayName;
     const avatar   = profile.photos?.[0]?.value;
     const googleId = profile.id;

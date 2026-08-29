@@ -91,7 +91,6 @@ export default function DashboardPage() {
 
         <div className="sb-card p-6">
           <div className="flex items-center justify-between">
-            {/* Teach = brand teal (not violet) — matches the rest of the app's teach/learn convention */}
             <div><p className="eyebrow">YOUR EXCHANGE</p><h2 className="mt-2 text-lg font-bold">Learn ↔ Teach</h2></div>
             <div className="rounded-2xl bg-brand-50 p-3 text-brand-600"><GraduationCap size={21}/></div>
           </div>
@@ -124,17 +123,33 @@ export default function DashboardPage() {
       <section className="grid gap-5 lg:grid-cols-2">
         <div className="sb-card p-6">
           <SectionHeading title="Best skill matches" subtitle="People whose skills complement yours." href="/matching" action="View all"/>
-          {matches.length ? <div className="mt-4 space-y-3">{matches.slice(0,3).map((m,i)=><MatchPreview key={m.candidateId || i} match={m}/>)}</div> :
-            <div className="mt-4 rounded-2xl bg-slate-50 p-5 text-center"><UsersRound className="mx-auto text-slate-300" size={26}/><p className="mt-2 text-sm font-semibold">Your best matches will appear here</p><Link href="/profile" className="mt-2 inline-block text-xs font-bold text-brand-600">Add learning + teaching skills</Link></div>}
+          {/* Was checking matches.length regardless of loading — flashed a false
+              "no matches yet" empty state on every load before data arrived. */}
+          {loading ? (
+            <div className="mt-4 space-y-3">
+              {[1,2,3].map(i => <div key={i} className="h-16 rounded-2xl bg-slate-100 animate-pulse" />)}
+            </div>
+          ) : matches.length ? (
+            <div className="mt-4 space-y-3">{matches.slice(0,3).map((m,i)=><MatchPreview key={m.candidateId || i} match={m}/>)}</div>
+          ) : (
+            <div className="mt-4 rounded-2xl bg-slate-50 p-5 text-center"><UsersRound className="mx-auto text-slate-300" size={26}/><p className="mt-2 text-sm font-semibold">Your best matches will appear here</p><Link href="/profile" className="mt-2 inline-block text-xs font-bold text-brand-600">Add learning + teaching skills</Link></div>
+          )}
         </div>
 
         <div className="sb-card p-6">
           <SectionHeading title="Upcoming learning" subtitle="Your next lessons and teaching sessions." href="/sessions" action="See schedule"/>
-          {nextSession ? <div className="mt-4 rounded-2xl border border-brand-100 bg-brand-50/50 p-4">
-            <div className="flex items-start justify-between"><div><span className="badge-blue">Learning session</span><h3 className="mt-3 font-bold">{nextSession.title || 'Skill exchange session'}</h3></div><CalendarDays className="text-brand-600" size={20}/></div>
-            <div className="mt-4 flex flex-wrap gap-4 text-xs text-slate-500"><span className="inline-flex items-center gap-1"><Clock3 size={14}/>{formatDate(nextSession.scheduledAt)}</span><span>{nextSession.duration || 60} min</span></div>
-            <Link href="/sessions" className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-brand-700">Open session <ArrowRight size={14}/></Link>
-          </div> : <div className="mt-4 rounded-2xl bg-slate-50 p-5 text-center"><CalendarDays className="mx-auto text-slate-300" size={26}/><p className="mt-2 text-sm font-semibold">No upcoming sessions</p><Link href="/matching" className="mt-2 inline-block text-xs font-bold text-brand-600">Find a learning partner</Link></div>}
+          {/* Same fix — was checking nextSession without waiting for loading. */}
+          {loading ? (
+            <div className="mt-4 h-32 rounded-2xl bg-slate-100 animate-pulse" />
+          ) : nextSession ? (
+            <div className="mt-4 rounded-2xl border border-brand-100 bg-brand-50/50 p-4">
+              <div className="flex items-start justify-between"><div><span className="badge-blue">Learning session</span><h3 className="mt-3 font-bold">{nextSession.title || 'Skill exchange session'}</h3></div><CalendarDays className="text-brand-600" size={20}/></div>
+              <div className="mt-4 flex flex-wrap gap-4 text-xs text-slate-500"><span className="inline-flex items-center gap-1"><Clock3 size={14}/>{formatDate(nextSession.scheduledAt)}</span><span>{nextSession.duration || 60} min</span></div>
+              <Link href="/sessions" className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-brand-700">Open session <ArrowRight size={14}/></Link>
+            </div>
+          ) : (
+            <div className="mt-4 rounded-2xl bg-slate-50 p-5 text-center"><CalendarDays className="mx-auto text-slate-300" size={26}/><p className="mt-2 text-sm font-semibold">No upcoming sessions</p><Link href="/matching" className="mt-2 inline-block text-xs font-bold text-brand-600">Find a learning partner</Link></div>
+          )}
         </div>
       </section>
 

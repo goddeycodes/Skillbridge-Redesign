@@ -4,15 +4,23 @@ import { Plus, GraduationCap, BookOpen } from 'lucide-react';
 import toast from 'react-hot-toast';
 import SkillCard from './SkillCard';
 import SkillFormModal from './SkillFormModal';
+import VerificationModal from '../verification/VerificationModal';
+import ConfirmModal from '../shared/ConfirmModal';
 import { skillsAPI } from '../../services/api';
 
 export default function SkillsSection({ teachSkills, learnSkills, isOwner, onRefresh }) {
-  const [formOpen,     setFormOpen]     = useState(false);
-  const [editingSkill, setEditingSkill] = useState(null);
-  const [activeTab,    setActiveTab]    = useState('teach');
+  const [formOpen,        setFormOpen]        = useState(false);
+  const [editingSkill,    setEditingSkill]    = useState(null);
+  const [activeTab,       setActiveTab]       = useState('teach');
+  const [formDefaultType, setFormDefaultType] = useState('teach');
+  const [verifyOpen,      setVerifyOpen]      = useState(false);
+  const [verifyingSkill,  setVerifyingSkill]  = useState(null);
+  const [pendingDelete,   setPendingDelete]   = useState(null);
+  const [deleting,        setDeleting]        = useState(false);
 
   const openAdd = (type) => {
     setEditingSkill(null);
+    setFormDefaultType(type);
     setActiveTab(type);
     setFormOpen(true);
   };
@@ -22,14 +30,23 @@ export default function SkillsSection({ teachSkills, learnSkills, isOwner, onRef
     setFormOpen(true);
   };
 
-  const handleDelete = async (id) => {
-    if (!confirm('Remove this skill?')) return;
+  const handleDelete = (id) => {
+    const skill = [...teachSkills, ...learnSkills].find(s => s._id === id);
+    if (skill) setPendingDelete(skill);
+  };
+
+  const confirmDelete = async () => {
+    if (!pendingDelete) return;
+    setDeleting(true);
     try {
-      await skillsAPI.remove(id);
+      await skillsAPI.remove(pendingDelete._id);
       toast.success('Skill removed.');
       onRefresh();
+      setPendingDelete(null);
     } catch {
       toast.error('Failed to remove skill.');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -42,7 +59,6 @@ export default function SkillsSection({ teachSkills, learnSkills, isOwner, onRef
 
   return (
     <div className="sb-card">
-      {/* Tab bar */}
       <div className="flex items-center justify-between px-5 pt-4 pb-0 border-b border-slate-100">
         <div className="flex">
           {tabs.map(({ key, label, icon: Icon, count, color }) => (
@@ -74,7 +90,6 @@ export default function SkillsSection({ teachSkills, learnSkills, isOwner, onRef
         )}
       </div>
 
-      {/* Skill grid */}
       <div className="p-5">
         {shown.length === 0 ? (
           <div className="flex flex-col items-center py-12 text-center text-slate-400">
@@ -104,6 +119,7 @@ export default function SkillsSection({ teachSkills, learnSkills, isOwner, onRef
                 isOwner={isOwner}
                 onEdit={openEdit}
                 onDelete={handleDelete}
+                onVerify={(s) => { setVerifyingSkill(s); setVerifyOpen(true); }}
               />
             ))}
             {isOwner && shown.length < 10 && (
@@ -124,6 +140,25 @@ export default function SkillsSection({ teachSkills, learnSkills, isOwner, onRef
         onClose={() => { setFormOpen(false); setEditingSkill(null); }}
         onSaved={onRefresh}
         skill={editingSkill}
+        defaultType={formDefaultType}
+      />
+
+      <VerificationModal
+        open={verifyOpen}
+        onClose={() => { setVerifyOpen(false); setVerifyingSkill(null); }}
+        skill={verifyingSkill}
+        onVerified={onRefresh}
+      />
+
+      <ConfirmModal
+        open={!!pendingDelete}
+        onClose={() => setPendingDelete(null)}
+        onConfirm={confirmDelete}
+        loading={deleting}
+        danger
+        title="Remove this skill?"
+        description={pendingDelete ? `"${pendingDelete.name}" will be removed from your ${pendingDelete.type === 'teach' ? 'teaching' : 'learning'} list. This can't be undone.` : ''}
+        confirmLabel="Remove skill"
       />
     </div>
   );

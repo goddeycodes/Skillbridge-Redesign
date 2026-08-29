@@ -66,7 +66,7 @@ export default function StatsSection() {
               What our members say
             </h2>
             <p className="mt-3 text-slate-500 text-lg max-w-md mx-auto">
-              Real feedback from people who've exchanged skills on SkillBridge.
+              Real feedback from people who&apos;ve exchanged skills on SkillBridge.
             </p>
           </div>
 
