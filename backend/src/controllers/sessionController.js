@@ -8,6 +8,7 @@ const { sequelize } = require('../config/database');
 const { Op } = require('sequelize');
 const { roomIdFor } = require('../utils/roomId');
 const notify = require('../services/notificationService');
+const dailyService = require('../services/dailyService');
 
 const USER_ATTRS = ['id', 'name', 'avatar', 'reputation', 'timezone', 'isVerified'];
 
@@ -35,6 +36,9 @@ const hydrateSessions = async (sessions, viewerId) => {
       otherUser: userMap[isTeacher ? json.learnerId : json.teacherId] || null,
       canRate: json.status === 'completed' && !ratedSessionIds.has(json.id),
       roomId: roomIdFor(json.teacherId, json.learnerId),
+      // Frontend uses this to decide whether to show the in-app "Join" button
+      // at all, vs falling back to an external meetingLink (or nothing).
+      hasVideoRoom: !!json.videoRoomName,
     };
   });
 };
@@ -99,7 +103,7 @@ exports.bookSession = async (req, res) => {
   }
 };
 
-// GET /api/sessions?status=upcoming|completed|cancelled
+// GET /api/sessions?status=upcoming|completed|cancelled&role=teacher|learner
 exports.getSessions = async (req, res) => {
   try {
     const { status, role } = req.query;
@@ -133,6 +137,34 @@ exports.getSession = async (req, res) => {
 
     const [hydrated] = await hydrateSessions([session], req.user.id);
     res.json({ success: true, session: hydrated });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// GET /api/sessions/:id/video
+// Mints a short-lived join token for the in-app Daily.co room. Called
+// on-demand when the user clicks "Join," not stored anywhere.
+exports.getVideoAccess = async (req, res) => {
+  try {
+    const session = await Session.findByPk(req.params.id);
+    if (!session) return res.status(404).json({ success: false, message: 'Session not found.' });
+    if (session.teacherId !== req.user.id && session.learnerId !== req.user.id)
+      return res.status(403).json({ success: false, message: 'Not authorised.' });
+    if (session.status !== 'confirmed')
+      return res.status(400).json({ success: false, message: 'This session does not have an active video room.' });
+    if (!session.videoRoomName)
+      return res.status(404).json({
+        success: false,
+        message: 'No in-app video room for this session — use the external meeting link if one was provided.',
+        code: 'NO_VIDEO_ROOM',
+      });
+
+    const token = await dailyService.createMeetingToken(session.videoRoomName, req.user.name);
+    if (!token)
+      return res.status(503).json({ success: false, message: 'Could not create a join link right now. Please try again.' });
+
+    res.json({ success: true, roomUrl: session.videoRoomUrl, token });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -217,6 +249,21 @@ exports.acceptSession = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Only pending requests can be accepted.' });
 
     session.status = 'confirmed';
+
+    // Provision the in-app video room now — this is the moment the session
+    // becomes real, so there's no point creating a room any earlier (for a
+    // request that might get declined) or later (the learner should be able
+    // to join as soon as it's confirmed).
+    const room = await dailyService.createRoomForSession(session);
+    if (room) {
+      session.videoRoomName = room.roomName;
+      session.videoRoomUrl  = room.roomUrl;
+    }
+    // If room creation failed (e.g. DAILY_API_KEY not configured), we still
+    // confirm the session — it just falls back to session.meetingLink (an
+    // external link) if one was provided, or no video at all. Never block
+    // accepting a session because a third-party video API had a hiccup.
+
     await session.save();
 
     await notify.sessionAccepted(session.learnerId, req.user.name, session.title, session.id);
@@ -276,6 +323,7 @@ exports.cancelSession = async (req, res) => {
 
     const wasPending = session.status === 'pending';
     const isLearner  = req.user.id === session.learnerId;
+    const hadVideoRoom = session.videoRoomName;
 
     session.status = 'cancelled';
     await session.save({ transaction: t });
@@ -288,6 +336,11 @@ exports.cancelSession = async (req, res) => {
     );
 
     await t.commit();
+
+    // Clean up the video room promptly rather than letting it sit until its
+    // exp — a session cancelled hours before its scheduled time shouldn't
+    // leave a live room lying around. Best-effort: never blocks the cancel.
+    if (hadVideoRoom) dailyService.deleteRoom(hadVideoRoom);
 
     if (wasPending && isLearner) {
       await notify.create({

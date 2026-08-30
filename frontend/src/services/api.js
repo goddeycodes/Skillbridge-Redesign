@@ -46,11 +46,12 @@ export const sessionsAPI = {
   getAll:    (params) => api.get('/sessions', { params }),
   getOne:    (id)     => api.get(`/sessions/${id}`),
   book:      (data)   => api.post('/sessions', data),
-  accept:    (id)     => api.patch(`/sessions/${id}/accept`),   // NEW
-  decline:   (id)     => api.patch(`/sessions/${id}/decline`),  // NEW
+  accept:    (id)     => api.patch(`/sessions/${id}/accept`),   // NEW — was missing, backend already supported it
+  decline:   (id)     => api.patch(`/sessions/${id}/decline`),  // NEW — was missing, backend already supported it
   complete:  (id)     => api.patch(`/sessions/${id}/complete`),
   cancel:    (id)     => api.patch(`/sessions/${id}/cancel`),
   rate:      (id, data) => api.post(`/sessions/${id}/rate`, data),
+  getVideoAccess: (id) => api.get(`/sessions/${id}/video`),
 };
 
 export const messagesAPI = {

@@ -8,6 +8,7 @@ import { sessionsAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import SessionCard from '../../components/sessions/SessionCard';
 import ChatModal from '../../components/chat/ChatModal';
+import VideoCallModal from '../../components/sessions/VideoCallModal';
 import RateSessionModal from '../../components/sessions/RateSessionModal';
 import ConfirmModal from '../../components/shared/ConfirmModal';
 
@@ -35,6 +36,7 @@ function SessionsPageInner() {
   const [loading,   setLoading]   = useState(true);
 
   const [chatSession, setChatSession] = useState(null);
+  const [videoSession, setVideoSession] = useState(null);
   const [rateSession, setRateSession] = useState(null);
 
   const [pendingAction, setPendingAction] = useState(null); // { id, intent }
@@ -161,6 +163,7 @@ function SessionsPageInner() {
               key={s.id}
               session={s}
               onOpenChat={setChatSession}
+              onJoinVideo={setVideoSession}
               onAccept={(id) => requestAction(id, 'accept')}
               onDecline={(id) => requestAction(id, 'decline')}
               onComplete={(id) => requestAction(id, 'complete')}
@@ -172,6 +175,7 @@ function SessionsPageInner() {
       )}
 
       <ChatModal open={!!chatSession} onClose={() => setChatSession(null)} session={chatSession} />
+      <VideoCallModal open={!!videoSession} onClose={() => setVideoSession(null)} session={videoSession} />
       <RateSessionModal
         open={!!rateSession}
         onClose={() => setRateSession(null)}

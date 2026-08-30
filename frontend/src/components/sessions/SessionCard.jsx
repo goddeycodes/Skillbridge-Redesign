@@ -1,7 +1,9 @@
 'use client';
-import { Calendar, Clock, Video, MessageCircle, CheckCircle2, XCircle, User, Star, Check, X as XIcon } from 'lucide-react';
+import { useState } from 'react';
+import { Calendar, Clock, Video, MessageCircle, CheckCircle2, XCircle, User, Star, Check, X as XIcon, Paperclip } from 'lucide-react';
 import { format, isPast, isToday } from 'date-fns';
 import Badge from '../shared/Badge';
+import MaterialsModal from '../shared/MaterialsModal';
 
 const STATUS_CONFIG = {
   pending:   { label: 'Pending',   color: 'amber' },
@@ -10,15 +12,21 @@ const STATUS_CONFIG = {
   cancelled: { label: 'Cancelled', color: 'red'   },
 };
 
-export default function SessionCard({ session, onOpenChat, onAccept, onDecline, onComplete, onCancel, onRate }) {
-  const { otherUser, role, title, scheduledAt, duration, status, meetingLink, canRate } = session;
+export default function SessionCard({ session, onOpenChat, onJoinVideo, onAccept, onDecline, onComplete, onCancel, onRate }) {
+  const { otherUser, role, title, scheduledAt, duration, status, meetingLink, hasVideoRoom, canRate } = session;
   const date = new Date(scheduledAt);
   const isUpcoming = !isPast(date) && (status === 'pending' || status === 'confirmed');
   const statusCfg = STATUS_CONFIG[status] || STATUS_CONFIG.pending;
+  const [materialsOpen, setMaterialsOpen] = useState(false);
 
   const isTeacher = role === 'teacher';
   const awaitingTeacherAction = status === 'pending' && isTeacher;
   const awaitingLearnerResponse = status === 'pending' && !isTeacher;
+
+  const canJoin = status === 'confirmed' && isUpcoming && (hasVideoRoom || meetingLink);
+  // Materials (recordings/notes) only make sense once a session is real —
+  // no point offering an upload slot for a request that's still pending.
+  const showMaterials = status === 'confirmed' || status === 'completed';
 
   return (
     <div className="sb-card p-4 flex flex-col gap-3">
@@ -52,7 +60,7 @@ export default function SessionCard({ session, onOpenChat, onAccept, onDecline, 
         </span>
       </div>
 
-      {/* Pending request awaiting teacher decision — the missing accept/decline flow */}
+      {/* Pending request awaiting teacher decision */}
       {awaitingTeacherAction && (
         <div className="flex items-center gap-2 pt-1">
           <button
@@ -76,7 +84,7 @@ export default function SessionCard({ session, onOpenChat, onAccept, onDecline, 
         </div>
       )}
 
-      {/* Actions — chat/join/complete/cancel/rate, all unchanged from before */}
+      {/* Actions */}
       {!awaitingTeacherAction && (
         <div className="flex items-center gap-2 pt-1">
           <button
@@ -86,13 +94,33 @@ export default function SessionCard({ session, onOpenChat, onAccept, onDecline, 
             <MessageCircle size={13} /> Chat
           </button>
 
-          {meetingLink && isUpcoming && status === 'confirmed' && (
+          {canJoin && hasVideoRoom && (
+            <button
+              onClick={() => onJoinVideo(session)}
+              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium text-brand-600 bg-brand-50 rounded-lg hover:bg-brand-100 transition-colors"
+            >
+              <Video size={13} /> Join
+            </button>
+          )}
+
+          {canJoin && !hasVideoRoom && meetingLink && (
             <a
               href={meetingLink} target="_blank" rel="noopener noreferrer"
               className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium text-brand-600 bg-brand-50 rounded-lg hover:bg-brand-100 transition-colors"
             >
               <Video size={13} /> Join
             </a>
+          )}
+
+          {showMaterials && (
+            <button
+              onClick={() => setMaterialsOpen(true)}
+              aria-label="Session materials"
+              title="Materials"
+              className="p-2 rounded-lg text-slate-400 hover:text-brand-600 hover:bg-brand-50 transition-colors"
+            >
+              <Paperclip size={16} />
+            </button>
           )}
 
           {status === 'confirmed' && (
@@ -135,6 +163,15 @@ export default function SessionCard({ session, onOpenChat, onAccept, onDecline, 
           )}
         </div>
       )}
+
+      <MaterialsModal
+        open={materialsOpen}
+        onClose={() => setMaterialsOpen(false)}
+        parentType="session"
+        parentId={session.id}
+        canUpload
+        title={`Materials — ${title}`}
+      />
     </div>
   );
 }
