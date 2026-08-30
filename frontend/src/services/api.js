@@ -43,15 +43,14 @@ export const matchAPI = {
 };
 
 export const sessionsAPI = {
-  getAll:      (params) => api.get('/sessions', { params }),
-  getOne:      (id)     => api.get(`/sessions/${id}`),
-  getProgress: ()       => api.get('/sessions/progress'),
-  book:        (data)   => api.post('/sessions', data),
-  accept:      (id)     => api.patch(`/sessions/${id}/accept`),
-  decline:     (id)     => api.patch(`/sessions/${id}/decline`),
-  complete:    (id)     => api.patch(`/sessions/${id}/complete`),
-  cancel:      (id)     => api.patch(`/sessions/${id}/cancel`),
-  rate:        (id, data) => api.post(`/sessions/${id}/rate`, data),
+  getAll:    (params) => api.get('/sessions', { params }),
+  getOne:    (id)     => api.get(`/sessions/${id}`),
+  book:      (data)   => api.post('/sessions', data),
+  accept:    (id)     => api.patch(`/sessions/${id}/accept`),   // NEW
+  decline:   (id)     => api.patch(`/sessions/${id}/decline`),  // NEW
+  complete:  (id)     => api.patch(`/sessions/${id}/complete`),
+  cancel:    (id)     => api.patch(`/sessions/${id}/cancel`),
+  rate:      (id, data) => api.post(`/sessions/${id}/rate`, data),
 };
 
 export const messagesAPI = {

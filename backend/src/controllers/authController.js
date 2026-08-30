@@ -68,6 +68,20 @@ exports.getMe = async (req, res) => {
 
 // GET /api/auth/google/callback
 exports.googleCallback = async (req, res) => {
+  // Fail loudly instead of producing a broken relative redirect
+  // ("undefined/auth/callback...") that silently 404s on the API server
+  // instead of landing the user back on the frontend. This was very likely
+  // the actual cause of "unreliable" Google sign-in — it fails differently
+  // depending on whether CLIENT_URL happens to be set in a given environment.
+  const clientUrl = process.env.CLIENT_URL;
+  if (!clientUrl) {
+    console.error('googleCallback: CLIENT_URL is not set — cannot redirect back to the frontend.');
+    return res.status(500).json({
+      success: false,
+      message: 'Server misconfiguration: CLIENT_URL is not set.',
+    });
+  }
+
   try {
     const profile  = req.user; // populated by passport-google-oauth20
     const email    = profile.emails?.[0]?.value?.trim().toLowerCase();
@@ -75,9 +89,17 @@ exports.googleCallback = async (req, res) => {
     const avatar   = profile.photos?.[0]?.value;
     const googleId = profile.id;
 
+    // Google didn't return an email (can happen depending on consent scope) —
+    // we can't create or match an account without one. Fail with a specific,
+    // debuggable error code instead of a generic oauth_failed.
+    if (!email) {
+      console.error('googleCallback: Google profile did not include an email address.', { googleId, name });
+      return res.redirect(`${clientUrl}/auth/login?error=oauth_no_email`);
+    }
+
     let user = await User.findOne({ where: { googleId } });
 
-    if (!user && email) {
+    if (!user) {
       user = await User.findOne({ where: { email } });
       if (user) {
         await user.update({ googleId, avatar: avatar || user.avatar });
@@ -85,13 +107,24 @@ exports.googleCallback = async (req, res) => {
     }
 
     if (!user) {
-      user = await User.create({ name, email, googleId, avatar, isVerified: true });
+      try {
+        user = await User.create({ name, email, googleId, avatar, isVerified: true });
+      } catch (createErr) {
+        // Most likely cause: a race where two callbacks fired for the same
+        // new user (double-click, browser retry) and the unique email
+        // constraint rejected the second insert. Recover by re-fetching
+        // instead of surfacing a 500 to the user.
+        if (createErr.name === 'SequelizeUniqueConstraintError') {
+          user = await User.findOne({ where: { email } });
+        }
+        if (!user) throw createErr;
+      }
     }
 
     const token = generateToken({ id: user.id, email: user.email });
-    res.redirect(`${process.env.CLIENT_URL}/auth/callback?token=${token}`);
+    res.redirect(`${clientUrl}/auth/callback?token=${token}`);
   } catch (err) {
     console.error('Google OAuth error:', err);
-    res.redirect(`${process.env.CLIENT_URL}/auth/login?error=oauth_failed`);
+    res.redirect(`${clientUrl}/auth/login?error=oauth_failed`);
   }
 };
