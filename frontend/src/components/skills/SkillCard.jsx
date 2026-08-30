@@ -1,7 +1,8 @@
 'use client';
-import { Edit2, Trash2, ShieldCheck, ShieldAlert } from 'lucide-react';
+import { useState } from 'react';
+import { Edit2, Trash2, BookOpen, GraduationCap, Paperclip } from 'lucide-react';
 import Badge from '../shared/Badge';
-import SkillCoverImage from './SkillCoverImage';
+import MaterialsModal from '../shared/MaterialsModal';
 
 const PROFICIENCY_COLOR = {
   beginner:     'slate',
@@ -16,22 +17,30 @@ const FORMAT_LABEL = {
   both:         '1-on-1 & Group',
 };
 
-export default function SkillCard({ skill, isOwner, onEdit, onDelete, onVerify }) {
+export default function SkillCard({ skill, isOwner, onEdit, onDelete }) {
   const isTeach = skill.type === 'teach';
+  const [materialsOpen, setMaterialsOpen] = useState(false);
 
   return (
-    <div className="sb-card overflow-hidden flex flex-col group hover:shadow-md transition-shadow">
-      <SkillCoverImage skill={skill} className="h-32">
-        <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-bold text-slate-700 backdrop-blur">
-          {skill.category || 'Skill'}
-        </span>
-        {isTeach && skill.isVerified && (
-          <span className="absolute left-3 bottom-3 flex items-center gap-1 rounded-full bg-emerald-500/90 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur">
-            <ShieldCheck size={11} /> Verified
-          </span>
-        )}
+    <div className="sb-card p-4 flex flex-col gap-3 group hover:shadow-md transition-shadow">
+      {/* Header */}
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex items-start gap-3">
+          <div className={`mt-0.5 w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+            isTeach ? 'bg-brand-50' : 'bg-learn-50'
+          }`}>
+            {isTeach
+              ? <GraduationCap size={15} className="text-brand-600" />
+              : <BookOpen size={15} className="text-learn-600" />}
+          </div>
+          <div>
+            <p className="font-semibold text-slate-800 leading-tight">{skill.name}</p>
+            <p className="text-xs text-slate-400 mt-0.5">{skill.category}</p>
+          </div>
+        </div>
+
         {isOwner && (
-          <div className="absolute right-2 top-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
             <button
               onClick={() => onEdit(skill)}
               aria-label={`Edit ${skill.name}`}
@@ -48,48 +57,47 @@ export default function SkillCard({ skill, isOwner, onEdit, onDelete, onVerify }
             </button>
           </div>
         )}
-      </SkillCoverImage>
-
-      <div className="p-4 flex flex-col gap-3 flex-1">
-        <div>
-          <p className="font-semibold text-slate-800 leading-tight">{skill.name}</p>
-          {skill.description ? (
-            <p className="text-sm text-slate-500 leading-relaxed line-clamp-2 mt-1">{skill.description}</p>
-          ) : (
-            <p className="text-xs text-slate-400 mt-1 italic">Add a description so learners know what to expect.</p>
-          )}
-        </div>
-
-        <div className="flex flex-wrap gap-1.5 mt-auto">
-          {skill.proficiency && (
-            <Badge label={skill.proficiency} color={PROFICIENCY_COLOR[skill.proficiency] || 'slate'} />
-          )}
-          {skill.format && (
-            <Badge label={FORMAT_LABEL[skill.format] || skill.format} color="slate" />
-          )}
-          {skill.language && skill.language !== 'English' && (
-            <Badge label={skill.language} color="amber" />
-          )}
-          {isTeach && (
-            <Badge label="Teaching" color="blue" />
-          )}
-          {!isTeach && (
-            <Badge label="Learning" color="violet" />
-          )}
-          {skill.tags?.slice(0, 2).map(tag => (
-            <Badge key={tag} label={`#${tag}`} color="slate" />
-          ))}
-        </div>
-
-        {isOwner && isTeach && !skill.isVerified && onVerify && (
-          <button
-            onClick={() => onVerify(skill)}
-            className="mt-1 flex items-center justify-center gap-1.5 w-full px-3 py-2 text-xs font-semibold text-brand-700 bg-brand-50 border border-brand-100 rounded-lg hover:bg-brand-100 transition-colors"
-          >
-            <ShieldAlert size={13} /> Verify this skill
-          </button>
-        )}
       </div>
+
+      {/* Description */}
+      {skill.description && (
+        <p className="text-sm text-slate-500 leading-relaxed line-clamp-2">{skill.description}</p>
+      )}
+
+      {/* Meta badges */}
+      <div className="flex flex-wrap gap-1.5 mt-auto">
+        {skill.proficiency && (
+          <Badge label={skill.proficiency} color={PROFICIENCY_COLOR[skill.proficiency] || 'slate'} />
+        )}
+        {skill.format && skill.format !== 'one-on-one' && (
+          <Badge label={FORMAT_LABEL[skill.format]} color="slate" />
+        )}
+        {skill.language && skill.language !== 'English' && (
+          <Badge label={skill.language} color="amber" />
+        )}
+        {skill.tags?.slice(0, 3).map(tag => (
+          <Badge key={tag} label={`#${tag}`} color="slate" />
+        ))}
+      </div>
+
+      {/* Materials — only meaningful for teaching skills; a "learn" listing has nothing to attach */}
+      {isTeach && (
+        <button
+          onClick={() => setMaterialsOpen(true)}
+          className="flex items-center gap-1.5 text-xs font-medium text-slate-400 hover:text-brand-600 transition-colors -mt-1"
+        >
+          <Paperclip size={12} /> {isOwner ? 'Manage materials' : 'View materials'}
+        </button>
+      )}
+
+      <MaterialsModal
+        open={materialsOpen}
+        onClose={() => setMaterialsOpen(false)}
+        parentType="skill"
+        parentId={skill._id}
+        canUpload={isOwner}
+        title={`Materials — ${skill.name}`}
+      />
     </div>
   );
 }

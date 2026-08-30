@@ -13,6 +13,7 @@ const configurePassport    = require('./config/passport');
 const { connectPostgres, connectMongo } = require('./config/database');
 const notificationService  = require('./services/notificationService');
 const pushService          = require('./services/pushService');
+const cloudinaryService    = require('./services/cloudinaryService');
 
 const app        = express();
 const httpServer = http.createServer(app);
@@ -24,6 +25,7 @@ const io = new Server(httpServer, {
 
 notificationService.init(io);
 pushService.init();
+cloudinaryService.init();
 require('./sockets/chatSocket')(io);
 
 // Make io available to REST controllers via req.app.get('io')
@@ -62,6 +64,7 @@ app.use('/api/ratings',       require('./routes/ratingRoutes'));
 app.use('/api/notifications', require('./routes/notificationRoutes'));
 app.use('/api/push',          require('./routes/pushRoutes'));
 app.use('/api/verification',  require('./routes/verificationRoutes'));
+app.use('/api/materials',     require('./routes/materialRoutes'));
 
 // ─── Health ──────────────────────────────────────────────────
 app.get('/health', (req, res) =>

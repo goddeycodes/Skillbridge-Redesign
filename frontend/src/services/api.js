@@ -102,4 +102,18 @@ export const creditsAPI = {
   getLedger: (params) => api.get('/credits', { params }),
 };
 
+export const materialsAPI = {
+  list: (parentType, parentId) =>
+    api.get('/materials', { params: { parentType, parentId } }),
+  upload: (parentType, parentId, file, title) => {
+    const form = new FormData();
+    form.append('file', file);
+    form.append('parentType', parentType);
+    form.append('parentId', parentId);
+    if (title) form.append('title', title);
+    return api.post('/materials', form, { headers: { 'Content-Type': 'multipart/form-data' } });
+  },
+  remove: (id) => api.delete(`/materials/${id}`),
+};
+
 export default api;
