@@ -43,15 +43,15 @@ export const matchAPI = {
 };
 
 export const sessionsAPI = {
-  getAll:      (params) => api.get('/sessions', { params }),
-  getOne:      (id)     => api.get(`/sessions/${id}`),
-  getProgress: ()       => api.get('/sessions/progress'),
-  book:        (data)   => api.post('/sessions', data),
-  accept:      (id)     => api.patch(`/sessions/${id}/accept`),
-  decline:     (id)     => api.patch(`/sessions/${id}/decline`),
-  complete:    (id)     => api.patch(`/sessions/${id}/complete`),
-  cancel:      (id)     => api.patch(`/sessions/${id}/cancel`),
-  rate:        (id, data) => api.post(`/sessions/${id}/rate`, data),
+  getAll:    (params) => api.get('/sessions', { params }),
+  getOne:    (id)     => api.get(`/sessions/${id}`),
+  book:      (data)   => api.post('/sessions', data),
+  accept:    (id)     => api.patch(`/sessions/${id}/accept`),   // NEW — was missing, backend already supported it
+  decline:   (id)     => api.patch(`/sessions/${id}/decline`),  // NEW — was missing, backend already supported it
+  complete:  (id)     => api.patch(`/sessions/${id}/complete`),
+  cancel:    (id)     => api.patch(`/sessions/${id}/cancel`),
+  rate:      (id, data) => api.post(`/sessions/${id}/rate`, data),
+  getVideoAccess: (id) => api.get(`/sessions/${id}/video`),
 };
 
 export const messagesAPI = {
@@ -100,6 +100,20 @@ export const communityAPI = {
 
 export const creditsAPI = {
   getLedger: (params) => api.get('/credits', { params }),
+};
+
+export const materialsAPI = {
+  list: (parentType, parentId) =>
+    api.get('/materials', { params: { parentType, parentId } }),
+  upload: (parentType, parentId, file, title) => {
+    const form = new FormData();
+    form.append('file', file);
+    form.append('parentType', parentType);
+    form.append('parentId', parentId);
+    if (title) form.append('title', title);
+    return api.post('/materials', form, { headers: { 'Content-Type': 'multipart/form-data' } });
+  },
+  remove: (id) => api.delete(`/materials/${id}`),
 };
 
 export default api;

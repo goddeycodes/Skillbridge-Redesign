@@ -18,8 +18,8 @@ const CATEGORY_COLOR = {
 
 export default function PostCard({ post, onClick, onDeleted }) {
   const { user } = useAuth();
-  const [upvotes, setUpvotes] = useState(post.upvotes?.length ?? 0);
-  const [upvoted, setUpvoted] = useState(post.upvotes?.includes(user?.id));
+  const [upvotes,  setUpvotes]  = useState(post.upvotes?.length ?? 0);
+  const [upvoted,  setUpvoted]  = useState(post.upvotes?.includes(user?.id));
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -54,6 +54,7 @@ export default function PostCard({ post, onClick, onDeleted }) {
         onClick={() => onClick(post)}
         className="sb-card p-5 flex flex-col gap-3 cursor-pointer hover:shadow-md transition-shadow"
       >
+        {/* Header */}
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2.5 min-w-0">
             <Avatar user={{ name: post.userName, avatar: post.userAvatar }} size={32} />
@@ -78,11 +79,13 @@ export default function PostCard({ post, onClick, onDeleted }) {
           </div>
         </div>
 
+        {/* Title + preview */}
         <div>
           <h3 className="font-semibold text-slate-800 leading-snug line-clamp-2">{post.title}</h3>
           <p className="text-sm text-slate-500 mt-1 line-clamp-2 leading-relaxed">{post.content}</p>
         </div>
 
+        {/* Tags */}
         {post.tags?.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {post.tags.slice(0, 4).map(t => (
@@ -93,6 +96,7 @@ export default function PostCard({ post, onClick, onDeleted }) {
           </div>
         )}
 
+        {/* Footer stats */}
         <div className="flex items-center gap-4 pt-1 text-xs text-slate-400">
           <button
             onClick={handleUpvote}
@@ -105,7 +109,7 @@ export default function PostCard({ post, onClick, onDeleted }) {
             {upvotes}
           </button>
           <span className="flex items-center gap-1">
-            <MessageCircle size={13} /> {post.replies?.length ?? post.replyCount ?? 0}
+            <MessageCircle size={13} /> {post.replyCount ?? post.replies?.length ?? 0}
           </span>
           <span className="flex items-center gap-1">
             <Eye size={13} /> {post.views ?? 0}
